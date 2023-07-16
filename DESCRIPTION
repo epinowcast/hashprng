@@ -1,0 +1,20 @@
+Package: hbmPRNG
+Type: Package
+Title: Hash-Based Matching Pseudo-Random Number Generation
+Version: 0.1.0
+Authors@R:
+    c(person(given = "Carl",
+             family = "Pearson",
+             role = c("aut", "cre"),
+             email = "carl.ab.pearson@gmail.com",
+             comment = c(ORCID = "0000-0003-0701-7860")))
+Description: Provides helper functions for use of hash-based matching (HBM)
+    for pseudo-random number generation (PRNG) in stochastic simulations.
+    HBM-PRNG is an approach to simplify matching synthetic experiment samples,
+    which ensures that matched runs different only in the focal parameters, not
+    in their chance events.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
