@@ -25,8 +25,5 @@ SOFTWARE.
 MurmurHash3 was written by Austin Appleby, and is placed in the public
 domain. Austin Appleby disclaims copyright to this source code.
 
-This implementation was written by Shane Day, and is also public domain.
-This is a portable ANSI C implementation of MurmurHash3_x86_32 (Murmur3A)
-with support for progressive processing.
-
-The hbmPRNG authors copyright does NOT include any claims to MurmurHash3.
+The hbmPRNG authors copyright does NOT include any claims to MurmurHash3. The
+Rcpp-based adaptation of MurmurHash3 is placed in the public domain.

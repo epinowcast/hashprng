@@ -65,7 +65,7 @@ hash_seed <- function(salt, ...) {
     c,
     lapply(list(...), writeBin, con = raw()), init = writeBin(salt, raw())
   )
-  res <- .Call("hbmPRNG_digest", binned, PACKAGE = "hbmPRNG")
+  res <- .Call('_hbmPRNG_digest', binned, PACKAGE = 'hbmPRNG')
   # todo: move set seed into hbmPRNG_digest?
   set.seed(res)
 }
