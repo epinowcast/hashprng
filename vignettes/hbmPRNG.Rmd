@@ -172,8 +172,8 @@ seed_match_only <- system.time(
 hash_based_matching <- system.time(
   hbm_dt <- seq_len(100) |> lapply(function(seed) data.table(
     type = "HBM",
-    not_i = cumsum(stepper(pars = nonps, seed = seed)),
-    withi = cumsum(stepper(pars = intps, seed = seed))
+    not_i = cumsum(stepper(pars = nonps, seed = seed, HBM = TRUE)),
+    withi = cumsum(stepper(pars = intps, seed = seed, HBM = TRUE))
   )) |> rbindlist(idcol = "sample")
 )
 
@@ -182,7 +182,9 @@ sampledt <- rbind(smo_dt, hbm_dt)
 Timings:
 
 ```{r timings, echo=FALSE}
+print("Seed-Match-Only (SMO):")
 print(seed_match_only)
+print("Hash-Based Match (HBM):")
 print(hash_based_matching)
 ```
 
