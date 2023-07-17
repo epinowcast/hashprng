@@ -97,8 +97,8 @@ FORCE_INLINE uint64_t fmix64 ( uint64_t k )
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-IntegerVector digest(
-  RawVector Txt
+int digest(
+  const RawVector & Txt
 ) {
   auto key = as<std::vector<u_int8_t>>(Txt);
 
@@ -151,6 +151,13 @@ IntegerVector digest(
 
   h1 = fmix32(h1);
 
-  return h1;
+  if (h1 <= INT_MAX)
+    return static_cast<int>(h1);
+
+  if (h1 >= INT_MIN)
+    return static_cast<int>(h1 - INT_MIN) + INT_MIN;
+
+  throw h1;
+
 }
 

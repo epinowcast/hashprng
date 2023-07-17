@@ -11,12 +11,12 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // digest
-IntegerVector digest(RawVector Txt);
+int digest(const RawVector& Txt);
 RcppExport SEXP _hbmPRNG_digest(SEXP TxtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< RawVector >::type Txt(TxtSEXP);
+    Rcpp::traits::input_parameter< const RawVector& >::type Txt(TxtSEXP);
     rcpp_result_gen = Rcpp::wrap(digest(Txt));
     return rcpp_result_gen;
 END_RCPP
