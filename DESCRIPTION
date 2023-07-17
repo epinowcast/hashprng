@@ -23,7 +23,10 @@ LinkingTo:
 Imports: 
     Rcpp
 Suggests: 
+    knitr,
+    rmarkdown,
     roxygen2,
     testthat (>= 3.0.0),
     usethis
 Config/testthat/edition: 3
+VignetteBuilder: knitr
