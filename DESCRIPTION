@@ -23,7 +23,10 @@ LinkingTo:
 Imports: 
     Rcpp
 Suggests: 
+    data.table,
+    ggplot2,
     knitr,
+    parallel,
     rmarkdown,
     roxygen2,
     testthat (>= 3.0.0),
