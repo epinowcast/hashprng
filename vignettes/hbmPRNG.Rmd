@@ -217,9 +217,13 @@ identity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
       # if HBM, need to reseed RNG for each pair => draw
       # easier to salt => draw all possible => slice relevant
       hash_seed(salt, "inf", infector, t)
-      infectees <- infectable[(runif(infectable[length(infectable)]) < transmission_p)[infectable]]
+      infectees <- infectable[
+        (runif(tail(infectable, 1)) < transmission_p)[infectable]
+      ]
     } else {
-      infectees <- sample(infectable, rbinom(1, length(infectable), transmission_p))
+      infectees <- sample(
+        infectable, rbinom(1, length(infectable), transmission_p)
+      )
     }
     dY[infectees] <- 1
     infectable <- setdiff(infectable, infectees)
@@ -235,9 +239,13 @@ identity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
       # if HBM, need to reseed for each individual
       # include the t here - what if the model changed vax_t?
       psalt <- hash_seed(salt, "vax", t)
-      vaccinees <- infectable[(runif(N) < vaccination_p)[infectable]]
+      vaccinees <- infectable[
+        (runif(tail(infectable, 1)) < vaccination_p)[infectable]
+      ]
     } else {
-      vaccinees <- sample(infectable, rbinom(1, length(infectable), vaccination_p))
+      vaccinees <- sample(
+        infectable, rbinom(1, length(infectable), vaccination_p)
+      )
     }
     # for people still susceptible, indicate 1 => 3 transition
     dY[vaccinees] <- 2
@@ -272,6 +280,7 @@ outcomes.
 samplen <- 500L
 pop <- 4000L
 maxt <- 75L
+initI <- 5L
 ps <- list(
   transmission_p = 1 - exp(-0.78/pop),
    # ~ 0.78 infections produced per day in fully susceptible pop
@@ -288,8 +297,8 @@ intps <- c(ps, list(
 ))
 # create populations
 yinit <- rep.int(susceptible, pop)
-yinit[1] <- infectious
-yinit_nonid <- c(pop - 1L, 1L, 0L)
+yinit[1:initI] <- infectious
+yinit_nonid <- c(pop - initI, initI, 0L)
 
 stepper <- function(
   maxtime = maxt, y0,
@@ -324,8 +333,12 @@ set.seed(8675309)
 nonid_no_match <- system.time(
   ni_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
     type = "NON", model = "nonID",
-    not_i = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, HBM = FALSE)),
-    withi = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, HBM = FALSE))
+    not_i = cumsum(stepper(
+      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, HBM = FALSE
+    )),
+    withi = cumsum(stepper(
+      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, HBM = FALSE
+    ))
   ), mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
@@ -333,40 +346,60 @@ set.seed(8675309)
 id_no_match <- system.time(
   wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
     type = "NON", model = "ID",
-    not_i = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE)),
-    withi = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE))
+    not_i = cumsum(stepper(
+      y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE
+    )),
+    withi = cumsum(stepper(
+      y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE
+    ))
   ), mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 nonid_seed_match_only <- system.time(
   ni_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
     type = "SMO", model = "nonID",
-    not_i = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = FALSE)),
-    withi = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = FALSE))
+    not_i = cumsum(stepper(
+      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = FALSE
+    )),
+    withi = cumsum(stepper(
+      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = FALSE
+    ))
   ), mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 id_seed_match_only <- system.time(
   wi_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
     type = "SMO", model = "ID",
-    not_i = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = FALSE)),
-    withi = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = FALSE))
+    not_i = cumsum(stepper(
+      y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = FALSE
+    )),
+    withi = cumsum(stepper(
+      y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = FALSE
+    ))
   ), mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 nonid_hash_based_matching <- system.time(
   ni_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) data.table(
     type = "HBM", model = "nonID",
-    not_i = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = TRUE)),
-    withi = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = TRUE))
+    not_i = cumsum(stepper(
+      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = TRUE
+    )),
+    withi = cumsum(stepper(
+      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = TRUE
+    ))
   ), mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 id_hash_based_matching <- system.time(
   wi_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) data.table(
     type = "HBM", model = "ID",
-    not_i = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = TRUE)),
-    withi = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = TRUE))
+    not_i = cumsum(stepper(
+      y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = TRUE
+    )),
+    withi = cumsum(stepper(
+      y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = TRUE
+    ))
   ), mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
