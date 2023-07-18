@@ -1,6 +1,6 @@
 ---
 title: "Hash-based Matched Pseudo-Random Number Generation"
-output: rmarkdown::html_vignette
+output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{hbmPRNG}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, echo=FALSE}
 library(hbmPRNG)
 # required for vignette knitting only
 library(Rcpp)
@@ -30,7 +30,7 @@ This vignette demonstrates the practical use of `hbmPRNG::hash_seed`; if you
 want a detailed explanation of *why* to use this approach, read the paper
 associated with the package citation: (TODO).
 
-Briefly, hash-based matched pseudo-random number generation (HBMPRNG) can ensure
+Briefly, hash-based matched pseudo-random number generation (HBM-PRNG) can ensure
 that the same "events" across different simulation scenarios are resolved
 consistently, while also still permitting stochastic simulation, and incurring
 minimal additional computational overhead. Matched samples can then be analyzed
@@ -43,11 +43,37 @@ structure. In this vignette, we focus on how to use `hbmPRNG::hash_seed`, but do
 so using two different implementations of the same model world and two different
 definitions of "same" for events.
 
+# Standards of Matching
+
+Throughout this vignette we consider a few matching regimes:
+
+ - Non-matched (NON): this is equivalent to drawing an item from this random
+ process and then one from the same-but-slightly-perturbed process and comparing
+ them. Note: this kind of simulation should still be seeded, to ensure
+ reproducibile PRNG.
+ - Seed-Matched-Only (SMO): this scheme ensures that compared runs both have the
+ same PRNG seeding. This can guarantee, for example, that the history leading up
+ to an intervention is the same. However, generally once simulation trajectory
+ diverges, the PRNG is exercised differently, and events that _should_ be the
+ same between runs are not guaranteed to see the same PRNG draws.
+ - Fully-Event-Matched (FEM): this scheme ensures that compared runs have all of
+ their identical events resolved consistently. Any event which occurs in both
+ simulations gets the same draw from the PRNG.
+
+Hash-based matched (HBM) PRNG is an approach to acheiving FEM simulations. There
+are alternatives, for example managing multiple PRNGs or precomputing all
+possible outcomes. In general, HBM imposes a guaranteed-but-low computational cost,
+scaling with the number of the PRNG draws in any given simulation, with minimal
+implementation burden on the modeller.
+
+We'll be making comparisons across NON, SMO, and HBM in terms of implementation,
+compute cost, and calculation resolution.
+
 # Model World and Scenario
 
-Let's consider an infectious disease system of the *S*usceptible-*I*nfectious-
+We'll be considering an infectious disease system of the *S*usceptible-*I*nfectious-
 *R*emoved variety and an intervention where, after some delay from initial
-introduction, a portion of the population are spontaneously moved to *R*
+infection introduction, a portion of the population are spontaneously moved to *R*
 (representing e.g. a reactive vaccination campaign).
 
 # Model Implementation
@@ -61,12 +87,18 @@ susceptible individuals - this converts *S* to *I* at the end of the step.
 3. If it's time for the move, we'll consider which susceptible individuals to
 remove - *S* to *R*.
 
-We're also going to implement this model with a switch for whether or not to use
-hash-based matching for the random number draws. We'll flip this switch to show
-matching-vs-not changes conclusions comparing across scenarios, as well as to
-measure the resource cost associated with the higher resolution measurement.
+This is essentially a perturbation to the classic Reed-Frost model, with the
+modification that people may be infectious for more than a single time step (
+as well as introducing an intervention).
 
-However, we've yet to concretely define what constitutes an event. We're going
+We're also going to implement this model two ways, each with a switch
+for whether or not to use hash-based matching for the random number draws.
+We'll flip this switch to show matching-vs-not changes conclusions comparing
+across scenarios, as well as to measure the resource cost associated with the
+higher resolution measurement. We'll also create a setup where the seed is only
+set once for the NON comparison.
+
+The other element we need to finally specify the model is what constitutes an event. We're going
 to offer two definitions and explore the consequences. Those two definitions
 hinge on whether the model's discrete individuals have *identity* or not.
 
@@ -100,7 +132,7 @@ N.B. `?rbinom` indicates draws are done per "Kachitvichyanukul, V. and Schmeiser
 describes and algorithm BPTE which does indeed draw uniform deviates a variable
 number of times per binomial draw, depending on the $n$ and $p$ arguments.
 
-```{r}
+```{r nonident}
 #' @param t an integer scalar, the simulation time
 #' @param y an integer vector, the current counts of individuals in S, I, and R
 #' @param parameters a list, `transmission_p`, `recovery_p`, `vaccination_p`,
@@ -179,25 +211,36 @@ identity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
   incI <- 0
   # consider whether each infectious individual exposes susceptible
   # individuals
-  for (infector in which(y == infectious)) {
-    # if HBM, reseed RNG
-    if (!is.null(salt)) hash_seed(salt, "inf", infector, t)
-    # draw all the potential exposures, indicate 1 => 2 transition for infectees
-    exposures <- runif(N) < transmission_p
-    dY[exposures & (y == susceptible)] <- 1
+  infectable <- which(y == susceptible)
+  for (infector in which(y == infectious)) if (length(infectable)) {
+    if (!is.null(salt)) {
+      # if HBM, need to reseed RNG for each pair => draw
+      # easier to salt => draw all possible => slice relevant
+      hash_seed(salt, "inf", infector, t)
+      infectees <- infectable[(runif(infectable[length(infectable)]) < transmission_p)[infectable]]
+    } else {
+      infectees <- sample(infectable, rbinom(1, length(infectable), transmission_p))
+    }
+    dY[infectees] <- 1
+    infectable <- setdiff(infectable, infectees)
     # if this infector would recovery, indicate 2 => 3 transition
     if(runif(1) < recovery_p) dY[infector] <- 1
   }
+  
   incI <- sum((dY == 1) & (y != infectious))
   
   # if its time for vaccination
   if (t == vax_t) {
-    # if HBM, reseed
-    if (!is.null(salt)) hash_seed(salt, "vax")
-    # draw all potential vaccinations
-    vaccinees <- runif(N) < vaccination_p
+    if (!is.null(salt)) {
+      # if HBM, need to reseed for each individual
+      # include the t here - what if the model changed vax_t?
+      psalt <- hash_seed(salt, "vax", t)
+      vaccinees <- infectable[(runif(N) < vaccination_p)[infectable]]
+    } else {
+      vaccinees <- sample(infectable, rbinom(1, length(infectable), vaccination_p))
+    }
     # for people still susceptible, indicate 1 => 3 transition
-    dY[vaccinees & (y == susceptible)] <- 2
+    dY[vaccinees] <- 2
   }
 
   return(list(dY, incI))
@@ -207,7 +250,7 @@ identity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
 # Comparison
 
 Let's run these simulation for a population of 4000 individuals, 75 time steps,
-and 1000 samples. We'll consider a very small amount of vaccination - only 3.3%.
+and 500 samples. We'll consider a very small amount of vaccination - only 3.3%.
 We want to assess the cumulative averted _incidence_ of this scenario compared
 to no vaccination.
 
@@ -239,7 +282,7 @@ ps <- list(
 nonps <- c(ps, list(
   vax_t = -1, vaccination_p = NA
 ))
-# intervention, vax_t == 10, 5% chance to happen
+# intervention, vax_t == 10, 3.3% chance to happen
 intps <- c(ps, list(
   vax_t = 10, vaccination_p = 0.033
 ))
@@ -253,8 +296,8 @@ stepper <- function(
   dFUN, pars, seed, HBM
 ) {
   
-  # set initial seeding
-  if (!HBM) set.seed(seed)
+  # if not HBM & a seed provided => SMO => set initial seeding
+  if (!missing(seed) && !HBM) set.seed(seed)
 
   # reserve data structure
   res <- integer(maxtime + 1)
@@ -277,6 +320,24 @@ Now we run all the samples, using plain sample ID as the SMO seed or HBM salt,
 for all the models.
 
 ```{r runsamples}
+set.seed(8675309)
+nonid_no_match <- system.time(
+  ni_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
+    type = "NON", model = "nonID",
+    not_i = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, HBM = FALSE)),
+    withi = cumsum(stepper(y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, HBM = FALSE))
+  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+)
+
+set.seed(8675309)
+id_no_match <- system.time(
+  wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
+    type = "NON", model = "ID",
+    not_i = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE)),
+    withi = cumsum(stepper(y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE))
+  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+)
+
 nonid_seed_match_only <- system.time(
   ni_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
     type = "SMO", model = "nonID",
@@ -309,15 +370,19 @@ id_hash_based_matching <- system.time(
   ), mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
-sampledt <- rbind(ni_smo_dt, wi_smo_dt, ni_hbm_dt, wi_hbm_dt)
+sampledt <- rbind(ni_non_dt, wi_non_dt, ni_smo_dt, wi_smo_dt, ni_hbm_dt, wi_hbm_dt)
 ```
 Timings:
 
 ```{r timings, echo=FALSE}
+print("Non-matched (NON), non-identity:")
+print(nonid_no_match)
 print("Seed-Match-Only (SMO), non-identity:")
 print(nonid_seed_match_only)
 print("Hash-Based Match (HBM), non-identity:")
 print(nonid_hash_based_matching)
+print("Non-matched (NON), with identity:")
+print(id_no_match)
 print("Seed-Match-Only (SMO), with identity:")
 print(id_seed_match_only)
 print("Hash-Based Match (HBM), with identity:")
@@ -342,7 +407,7 @@ qtiled_dt <- reduced_dt[,{
 
 ... and lastly, we should visualize these
 
-```{r spaghetti, echo=FALSE}
+```{r spaghetti, echo=FALSE, out.width="100%"}
 ggplot(reduced_dt) +
   aes(time, averted, color = type, group = interaction(type, sample)) +
   facet_grid(. ~ model) +
@@ -353,8 +418,21 @@ ggplot(reduced_dt) +
   )
 ```
 
-```{r ribbons, echo=FALSE}
+```{r ribbons, echo=FALSE, out.width="100%"}
 ggplot(qtiled_dt) + aes(time) +
+  facet_grid(. ~ model) +
+  geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
+  geom_line(aes(color = type, y = md)) +
+  scale_color_discrete(
+    NULL, aesthetics = c("color", "fill")
+  ) +
+  theme_minimal() + theme(
+    legend.position = c(1, 1) - 0.05, legend.justification = c(1, 1)
+  )
+```
+
+```{r noncrazyribbons, echo=FALSE, out.width="100%"}
+ggplot(qtiled_dt[type != "NON"]) + aes(time) +
   facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
