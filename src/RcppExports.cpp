@@ -11,19 +11,20 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // digest
-int digest(const RawVector& Txt);
-RcppExport SEXP _hbmPRNG_digest(SEXP TxtSEXP) {
+int digest(const int salt, const RawVector& Txt);
+RcppExport SEXP _hbmPRNG_digest(SEXP saltSEXP, SEXP TxtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type salt(saltSEXP);
     Rcpp::traits::input_parameter< const RawVector& >::type Txt(TxtSEXP);
-    rcpp_result_gen = Rcpp::wrap(digest(Txt));
+    rcpp_result_gen = Rcpp::wrap(digest(salt, Txt));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_hbmPRNG_digest", (DL_FUNC) &_hbmPRNG_digest, 1},
+    {"_hbmPRNG_digest", (DL_FUNC) &_hbmPRNG_digest, 2},
     {NULL, NULL, 0}
 };
 

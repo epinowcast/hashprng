@@ -2,8 +2,17 @@
 #' @title Hash-Based Matching Pseudo-Random Number Generation
 #'
 #' @details
-#' This function provides a one-step invocation for hash-based matching
+#' These functions provide convenient invocation for hash-based matching
 #' pseudo-random generation (HBM-PRNG).
+#'
+#' `hash_seed` uses a `salt` value along with distinguishing features of an event.
+#' Typically, `salt` distinguishes an overall sample simulation, but it can also
+#' be a temporarily computed value for events that share some-but-not all features.
+#'
+#' `hash_salt` computes a _partial_ hash, for when several events need draws,
+#' but share a partially consistent feature set. The result of `hash_salt`
+#' can for the consistent features can be computed once, then provided to
+#' `hash_seed` along with remaining distinct features.
 #'
 #' For matched stochastic simulation, we desire a few properties:
 #'  - the _same_ random events are resolved _consistently_
@@ -49,13 +58,15 @@
 #' salt |> hash_seed(evt$type, evt$from, evt$to, evt$time)
 #' print(runif(10))
 hash_seed <- function(salt, ...) {
+  set.seed(hash_salt(salt, ...))
+}
+
+#' @rdname hash_seed
+#' @export
+hash_salt <- function(salt, ...) {
   # first, send all the `...` arguments to binary representation
   # HAEC SUNT DRACONES: leaves all error handling to `writeBin`
-  binned <- Reduce(
-    c,
-    lapply(list(...), writeBin, con = raw()), init = writeBin(salt, raw())
-  )
-  res <- .Call('_hbmPRNG_digest', binned, PACKAGE = 'hbmPRNG')
-  # todo: move set seed into hbmPRNG_digest?
-  set.seed(res)
+  # handling for empty ...?
+  binned <- Reduce(c, lapply(list(...), writeBin, con = raw()))
+  return(.Call('_hbmPRNG_digest', salt, binned, PACKAGE = 'hbmPRNG'))
 }

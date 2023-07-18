@@ -2,9 +2,12 @@
 % Please edit documentation in R/hbmPRNG.R
 \name{hash_seed}
 \alias{hash_seed}
+\alias{hash_salt}
 \title{Hash-Based Matching Pseudo-Random Number Generation}
 \usage{
 hash_seed(salt, ...)
+
+hash_salt(salt, ...)
 }
 \arguments{
 \item{salt}{the matching value for a particular collection of simulations}
@@ -15,8 +18,17 @@ hash_seed(salt, ...)
 Hash-Based Matching Pseudo-Random Number Generation
 }
 \details{
-This function provides a one-step invocation for hash-based matching
+These functions provide convenient invocation for hash-based matching
 pseudo-random generation (HBM-PRNG).
+
+\code{hash_seed} uses a \code{salt} value along with distinguishing features of an event.
+Typically, \code{salt} distinguishes an overall sample simulation, but it can also
+be a temporarily computed value for events that share some-but-not all features.
+
+\code{hash_salt} computes a \emph{partial} hash, for when several events need draws,
+but share a partially consistent feature set. The result of \code{hash_salt}
+can for the consistent features can be computed once, then provided to
+\code{hash_seed} along with remaining distinct features.
 
 For matched stochastic simulation, we desire a few properties:
 \itemize{

@@ -98,7 +98,7 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 int digest(
-  const RawVector & Txt
+  const int salt, const RawVector & Txt
 ) {
   auto key = as<std::vector<u_int8_t>>(Txt);
 
@@ -106,7 +106,7 @@ int digest(
   const size_t len = key.size();
   const size_t nblocks = len / 4;
 
-  uint32_t h1 = 0;
+  uint32_t h1 = static_cast<uint32_t>(salt);
 
   const uint32_t c1 = 0xcc9e2d51;
   const uint32_t c2 = 0x1b873593;
