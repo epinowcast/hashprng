@@ -1,6 +1,6 @@
 ---
 title: "Hash-based Matched Pseudo-Random Number Generation"
-output: rmarkdown::pdf_document
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{hbmPRNG}
   %\VignetteEngine{knitr::rmarkdown}
@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
