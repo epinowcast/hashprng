@@ -31,6 +31,8 @@ yinit <- rep.int(susceptible, pop)
 yinit[1:initI] <- infectious
 yinit_nonid <- c(pop - initI, initI, 0L)
 
+ncores <- parallel::detectCores() - 1L
+
 stepper <- function(
     maxtime = maxt, y0,
     dFUN, pars, seed, HBM
@@ -47,7 +49,7 @@ stepper <- function(
   for (i in seq_len(maxtime)) {
     dY <- if (HBM) dFUN(i, y, pars, seed) else dFUN(i, y, pars)
     y <- y + dY[[1]]
-    res[i+1] <- dY[[2]]
+    res[i + 1] <- dY[[2]]
   }
 
   return(res)

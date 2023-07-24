@@ -2,6 +2,9 @@
 #' the basic vignette.
 
 library(hbmPRNG)
+library(data.table)
+library(parallel)
+library(Rcpp)
 
 # parse the command args
 .args <- if (interactive()) c(
@@ -17,11 +20,15 @@ source(.args[1])
 #' @param parameters a list, `transmission_p`, `recovery_p`, `vaccination_p`,
 #'   and `vax_t`
 #' @param salt optional; if non-null, using HBM
-nonidentity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
+non_identity_dStep <- function(
+  t, y, parameters, salt = NULL
+) { with(parameters, {
 
   # extract the S, I population counts
   num_infectious <- y[infectious]
   num_susceptible <- y[susceptible]
+
+  any_infect_p <- 1 - (1 - transmission_p)^num_infectious
 
   # if we are matching events
   if (!is.null(salt)) {
@@ -29,10 +36,10 @@ nonidentity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
     hash_seed(salt, t)
     evtqs <- runif(2)
     # convert these to the outcomes
-    newinf <- qbinom(evtqs[1], num_susceptible, 1-(1-transmission_p)^num_infectious)
+    newinf <- qbinom(evtqs[1], num_susceptible, any_infect_p)
     newrem <- qbinom(evtqs[2], num_infectious, recovery_p)
-  } else { # simply make the binomial draws
-    newinf <- rbinom(1, num_susceptible, 1-(1-transmission_p)^num_infectious)
+  } else { # otherwise make the binomial draws directly
+    newinf <- rbinom(1, num_susceptible, any_infect_p)
     newrem <- rbinom(1, num_infectious, recovery_p)
   }
 
@@ -53,50 +60,54 @@ nonidentity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
 
   # return the overall state change, as well as new incidence
   return(list(dY, newinf))
-})
+}) }
 
 set.seed(8675309)
 nonid_no_match <- system.time(
   ni_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
     type = "NON", model = "nonID",
     not_i = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, HBM = FALSE
+      y0 = yinit_nonid, dFUN = non_identity_dStep, pars = nonps, HBM = FALSE
     )),
     withi = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, HBM = FALSE
+      y0 = yinit_nonid, dFUN = non_identity_dStep, pars = intps, HBM = FALSE
     ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  ), mc.cores = ncores) |> rbindlist(idcol = "sample")
 )
 
 nonid_seed_match_only <- system.time(
-  ni_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
+  ni_smo_dt <- seq_len(samplen) |> parallel::mclapply(\(seed) { data.table(
     type = "SMO", model = "nonID",
     not_i = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = FALSE
+      y0 = yinit_nonid, dFUN = non_identity_dStep, pars = nonps,
+      seed = seed, HBM = FALSE
     )),
     withi = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = FALSE
+      y0 = yinit_nonid, dFUN = non_identity_dStep, pars = intps,
+      seed = seed, HBM = FALSE
     ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  ) }, mc.cores = ncores) |> rbindlist(idcol = "sample")
 )
 
 nonid_hash_based_matching <- system.time(
-  ni_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) data.table(
+  ni_hbm_dt <- seq_len(samplen) |> mclapply(\(salt) { data.table(
     type = "HBM", model = "nonID",
     not_i = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = TRUE
+      y0 = yinit_nonid, dFUN = non_identity_dStep, pars = nonps,
+      seed = salt, HBM = TRUE
     )),
     withi = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = TRUE
+      y0 = yinit_nonid, dFUN = non_identity_dStep, pars = intps,
+      seed = salt, HBM = TRUE
     ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  )}, mc.cores = ncores) |> rbindlist(idcol = "sample")
 )
 
 timings <- list(
-  non = nonid_no_match, smo = nonid_seed_match_only, hbm = nonid_hash_based_matching
+  non = nonid_no_match, smo = nonid_seed_match_only,
+  hbm = nonid_hash_based_matching
 )
 
 samples_dt <- rbind(ni_non_dt, ni_smo_dt, ni_hbm_dt)
 
 save(timings, samples_dt, file = .args[2])
-

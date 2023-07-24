@@ -100,7 +100,7 @@ using namespace Rcpp;
 int digest(
   const int salt, const RawVector & Txt
 ) {
-  auto key = as<std::vector<u_int8_t>>(Txt);
+  auto key = as<std::vector<uint8_t>>(Txt);
 
   const uint8_t * data = key.data();
   const size_t len = key.size();
