@@ -9,6 +9,7 @@
 ^pkgdown$
 ^codecov\.yml$
 ^CODE_OF_CONDUCT\.md$
+^CONTRIBUTING\.md$
 ^\.lintr$
 ^\.Rprofile
 ^inst/make_hexsticker\.R$
