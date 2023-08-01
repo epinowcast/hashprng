@@ -19,7 +19,7 @@ At <https://community.epinowcast.org>, you can post general questions, brainstor
 <https://github.com/epinowcast/epinowcast/issues> is for bug reports, performance issues, maintenance tasks, and feature requests. When you post, please abide by the following guidelines.
 
 * Before posting a new issue, please take a moment to search for existing similar issues in order to avoid duplication.
-* For bug reports: if you can, please install the latest GitHub version of `hbmPRNG` (i.e. `remotes::install_github("pearsonca/hbmPRNG")`) and verify that the issue still persists.
+* For bug reports: if you can, please install the latest GitHub version of `hashprng` (i.e. `remotes::install_github("pearsonca/hashprng")`) and verify that the issue still persists.
 * Describe your issue in prose as clearly and concisely as possible.
 * For any problem you identify, post a [minimal reproducible example](https://www.tidyverse.org/help/) like [this one](https://github.com/ropensci/targets/issues/256#issuecomment-754229683) so other contributors and authors can troubleshoot. A reproducible example is:
 
@@ -33,7 +33,7 @@ At <https://community.epinowcast.org>, you can post general questions, brainstor
 
 External code contributions are extremely helpful and appreciated. Here are the recommended steps.
 
-1. Prior to contribution, please propose your idea in a [new issue thread](https://github.com/pearsonca/hbmPRNG/issues) so you and the reviewer can define the intent and scope of the work.
+1. Prior to contribution, please propose your idea in a [new issue thread](https://github.com/pearsonca/hashprng/issues) so you and the reviewer can define the intent and scope of the work.
 2. [Fork the repository](https://help.github.com/articles/fork-a-repo/).
 3. Follow the [GitHub flow](https://guides.github.com/introduction/flow/index.html) to create a new branch, add commits, and open a pull request.
 4. Discuss your code with the reviewer in the pull request thread.

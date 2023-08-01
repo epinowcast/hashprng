@@ -1,7 +1,7 @@
 #' This code calculates & adds to inst the data associated with
 #' the basic vignette.
 
-library(hbmPRNG)
+library(hashprng)
 library(data.table)
 library(parallel)
 

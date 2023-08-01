@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(hbmPRNG)
+library(hashprng)
 
-test_check("hbmPRNG")
+test_check("hashprng")

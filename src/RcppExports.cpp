@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // digest
 int digest(const int salt, const RawVector& Txt);
-RcppExport SEXP _hbmPRNG_digest(SEXP saltSEXP, SEXP TxtSEXP) {
+RcppExport SEXP _hashprng_digest(SEXP saltSEXP, SEXP TxtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -24,11 +24,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_hbmPRNG_digest", (DL_FUNC) &_hbmPRNG_digest, 2},
+    {"_hashprng_digest", (DL_FUNC) &_hashprng_digest, 2},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_hbmPRNG(DllInfo *dll) {
+RcppExport void R_init_hashprng(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

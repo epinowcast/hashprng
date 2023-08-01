@@ -4,7 +4,8 @@
 #' These functions provide convenient invocation for hash-based matching
 #' pseudo-random generation (HBM-PRNG).
 #'
-#' `hash_seed` uses a `salt` value along with distinguishing features of an event.
+#' `hash_seed` uses a `salt` value along with distinguishing features of an
+#' event.
 #' Typically, `salt` distinguishes an overall sample simulation, but it can also
 #' be a temporarily computed value for events that share some-but-not all
 #' features.
@@ -68,5 +69,5 @@ hash_salt <- function(salt, ...) {
   # HAEC SUNT DRACONES: leaves all error handling to `writeBin`
   # handling for empty ...?
   binned <- unlist(lapply(list(...), writeBin, con = raw()))
-  return(.Call('_hbmPRNG_digest', salt, binned, PACKAGE = 'hbmPRNG'))
+  return(.Call('_hashprng_digest', salt, binned, PACKAGE = 'hashprng'))
 }
