@@ -32,8 +32,7 @@ Suggests:
     testthat (>= 3.0.0),
     usethis
 Config/Needs/website:
-    r-lib/pkgdown,
-    amirmasoudabdol/preferably
+    r-lib/pkgdown
 Config/Needs/hexsticker:
     hexSticker,
     sysfonts
