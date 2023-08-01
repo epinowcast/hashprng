@@ -69,6 +69,7 @@ Please note that the hbmPRNG project is released with a [Contributor Code of Con
 # hbmPRNG
 
 <!-- badges: start -->
+[![Codecov test coverage](https://codecov.io/gh/pearsonca/hbmPRNG/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pearsonca/hbmPRNG?branch=master)
 <!-- badges: end -->
 
 The goal of hbmPRNG is to ...
