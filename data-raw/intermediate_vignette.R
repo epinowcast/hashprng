@@ -4,7 +4,6 @@
 library(hashprng)
 library(data.table)
 library(parallel)
-library(Rcpp)
 
 # parse the command args
 .args <- if (interactive()) {
