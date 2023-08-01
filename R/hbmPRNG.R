@@ -67,6 +67,6 @@ hash_salt <- function(salt, ...) {
   # first, send all the `...` arguments to binary representation
   # HAEC SUNT DRACONES: leaves all error handling to `writeBin`
   # handling for empty ...?
-  binned <- Reduce(c, lapply(list(...), writeBin, con = raw()))
+  binned <- unlist(lapply(list(...), writeBin, con = raw()))
   return(.Call('_hbmPRNG_digest', salt, binned, PACKAGE = 'hbmPRNG'))
 }
