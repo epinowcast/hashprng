@@ -1,7 +1,6 @@
-
 susceptible <- 1L
-infectious  <- 2L
-removed     <- 3L
+infectious <- 2L
+removed <- 3L
 
 samplen <- 500L
 pop <- 4000L
@@ -10,7 +9,7 @@ initI <- 5L
 
 ps <- list(
   N = pop,
-  transmission_p = 1 - exp(-0.78/pop),
+  transmission_p = 1 - exp(-0.78 / pop),
   # ~ 0.78 infections produced per day in fully susceptible pop
   recovery_p = 1 - exp(-0.44) # ~ 2.3 days infectious
   # implies R0 ~ 1.8
@@ -35,9 +34,7 @@ ncores <- parallel::detectCores() - 1L
 
 stepper <- function(
     maxtime = maxt, y0,
-    dFUN, pars, seed, HBM
-) {
-
+    dFUN, pars, seed, HBM) {
   # if not HBM & a seed provided => SMO => set initial seeding
   if (!missing(seed) && !HBM) set.seed(seed)
 

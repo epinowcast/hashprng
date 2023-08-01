@@ -1,4 +1,3 @@
-
 #' @title Hash-Based Matching Pseudo-Random Number Generation
 #'
 #' @details
@@ -69,5 +68,5 @@ hash_salt <- function(salt, ...) {
   # HAEC SUNT DRACONES: leaves all error handling to `writeBin`
   # handling for empty ...?
   binned <- Reduce(c, lapply(list(...), writeBin, con = raw()))
-  return(.Call('_hbmPRNG_digest', salt, binned, PACKAGE = 'hbmPRNG'))
+  return(.Call("_hbmPRNG_digest", salt, binned, PACKAGE = "hbmPRNG"))
 }

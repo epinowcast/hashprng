@@ -18,7 +18,7 @@ test_that("diff salt + same object => diff draws", {
   salt <- 42
   hash_seed(salt, evt2$type, evt2$from, evt2$to, as.integer(evt2$time))
   draw2 <- runif(10)
-  expect_false(all(draw1==draw2))
+  expect_false(all(draw1 == draw2))
 })
 
 test_that("same salt + diff object => diff draws", {
@@ -29,5 +29,5 @@ test_that("same salt + diff object => diff draws", {
   draw1 <- runif(10)
   hash_seed(salt, evt2$type, evt2$from, evt2$to, as.integer(evt2$time))
   draw2 <- runif(10)
-  expect_false(all(draw1==draw2))
+  expect_false(all(draw1 == draw2))
 })

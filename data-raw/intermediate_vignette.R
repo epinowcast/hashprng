@@ -7,10 +7,14 @@ library(parallel)
 library(Rcpp)
 
 # parse the command args
-.args <- if (interactive()) c(
-  file.path("data-raw", "config.R"),
-  file.path("inst", "intermediate_vignette.rda")
-) else commandArgs(trailingOnly = TRUE)
+.args <- if (interactive()) {
+  c(
+    file.path("data-raw", "config.R"),
+    file.path("inst", "intermediate_vignette.rda")
+  )
+} else {
+  commandArgs(trailingOnly = TRUE)
+}
 
 # load shared definitions
 source(.args[1])
@@ -20,105 +24,113 @@ source(.args[1])
 #' @param parameters a list, `transmission_p`, `recovery_p`, `vaccination_p`,
 #'   and `vax_t`
 #' @param salt an integer scalar, optional; if present, use hash-based matching
-identity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
+identity_dStep <- function(t, y, parameters, salt = NULL) {
+  with(parameters, {
+    dY <- integer(N) # the associated changes
+    new_inf <- 0 # new incidence in this time step
 
-  dY <- integer(N)   # the associated changes
-  new_inf <- 0       # new incidence in this time step
-
-  # consider whether each infectious individual exposes susceptible
-  # individuals
-  infectable <- which(y == susceptible)
-
-  if (!is.null(salt)) {
-    # update to the partial salt
-    salt <- hash_salt(salt, "i", t)
-  }
-
-  for (infector in which(y == infectious)) if (length(infectable)) {
+    # consider whether each infectious individual exposes susceptible
+    # individuals
+    infectable <- which(y == susceptible)
 
     if (!is.null(salt)) {
-      # if HBM, need to reseed RNG for each pair => draw
-      # but also possible to salt => draw all possible => slice relevant
-      hash_seed(salt, infector)
-      infectees <- infectable[
-        (runif(tail(infectable, 1)) < transmission_p)[infectable]
-      ]
-    } else {
-      # if un-matched, can simply draw how many infected => sample which
-      infectees <- sample(
-        infectable, rbinom(1, length(infectable), transmission_p)
-      )
+      # update to the partial salt
+      salt <- hash_salt(salt, "i", t)
     }
 
-    # infect the identified individuals, reduce the infectable
-    dY[infectees] <- 1
-    infectable <- setdiff(infectable, infectees)
+    for (infector in which(y == infectious)) {
+      if (length(infectable)) {
+        if (!is.null(salt)) {
+          # if HBM, need to reseed RNG for each pair => draw
+          # but also possible to salt => draw all possible => slice relevant
+          hash_seed(salt, infector)
+          infectees <- infectable[
+            (runif(tail(infectable, 1)) < transmission_p)[infectable]
+          ]
+        } else {
+          # if un-matched, can simply draw how many infected => sample which
+          infectees <- sample(
+            infectable, rbinom(1, length(infectable), transmission_p)
+          )
+        }
 
-    new_inf <- new_inf + length(infectees)
+        # infect the identified individuals, reduce the infectable
+        dY[infectees] <- 1
+        infectable <- setdiff(infectable, infectees)
 
-    # if this infector would recovery, indicate 2 => 3 transition
-    # n.b. if HBM, still on the same set of draws
-    if(runif(1) < recovery_p) dY[infector] <- 1
-  }
+        new_inf <- new_inf + length(infectees)
 
-  incI <- sum((dY == 1) & (y != infectious))
-
-  # if its time for vaccination
-  if (t == vax_t) {
-    if (!is.null(salt)) {
-      # if HBM, need to reseed for each individual
-      # include the t here - what if the model changed vax_t?
-      psalt <- hash_seed(salt, "vax", t)
-      vaccinees <- infectable[
-        (runif(tail(infectable, 1)) < vaccination_p)[infectable]
-      ]
-    } else {
-      vaccinees <- sample(
-        infectable, rbinom(1, length(infectable), vaccination_p)
-      )
+        # if this infector would recovery, indicate 2 => 3 transition
+        # n.b. if HBM, still on the same set of draws
+        if (runif(1) < recovery_p) dY[infector] <- 1
+      }
     }
-    # for people still susceptible, indicate 1 => 3 transition
-    dY[vaccinees] <- 2
-  }
 
-  return(list(dY, incI))
-})
+    incI <- sum((dY == 1) & (y != infectious))
+
+    # if its time for vaccination
+    if (t == vax_t) {
+      if (!is.null(salt)) {
+        # if HBM, need to reseed for each individual
+        # include the t here - what if the model changed vax_t?
+        psalt <- hash_seed(salt, "vax", t)
+        vaccinees <- infectable[
+          (runif(tail(infectable, 1)) < vaccination_p)[infectable]
+        ]
+      } else {
+        vaccinees <- sample(
+          infectable, rbinom(1, length(infectable), vaccination_p)
+        )
+      }
+      # for people still susceptible, indicate 1 => 3 transition
+      dY[vaccinees] <- 2
+    }
+
+    return(list(dY, incI))
+  })
+}
 
 set.seed(8675309)
 id_no_match <- system.time(
-  wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
-    type = "NON", model = "ID",
-    not_i = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "NON", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 id_seed_match_only <- system.time(
-  wi_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
-    type = "SMO", model = "ID",
-    not_i = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = FALSE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = FALSE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  wi_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "SMO", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = FALSE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = FALSE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 id_hash_based_matching <- system.time(
-  wi_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) data.table(
-    type = "HBM", model = "ID",
-    not_i = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = TRUE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = TRUE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  wi_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) {
+    data.table(
+      type = "HBM", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = TRUE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = TRUE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 timings <- list(
