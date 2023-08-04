@@ -27,11 +27,13 @@ Imports:
 Suggests: 
     data.table,
     ggplot2,
+    hexSticker,
     knitr,
     parallel,
     rmarkdown,
     roxygen2,
     spelling,
+    sysfonts,
     testthat (>= 3.0.0),
     usethis
 Config/Needs/website:
