@@ -112,8 +112,8 @@ involved. If they do not, then events are only distinguished by *what* and
 # for the non-identity model, these will be compartment indices
 # for the identity model, these are individual states
 susceptible <- 1L
-infectious  <- 2L
-removed     <- 3L
+infectious <- 2L
+removed <- 3L
 ```
 
 ## Non-Identity Model Implementation
@@ -139,43 +139,44 @@ number of times per binomial draw, depending on the $n$ and $p$ arguments.
 #' @param parameters a list, `transmission_p`, `recovery_p`, `vaccination_p`,
 #'   and `vax_t`
 #' @param seed optional; if non-null, using HBM
-nonidentity_dStep <- function(t, y, parameters, seed = NULL) with(parameters, {
+nonidentity_dStep <- function(t, y, parameters, seed = NULL) {
+  with(parameters, {
+    # extract the S, I population counts
+    Ninf <- y[infectious]
+    Nsus <- y[susceptible]
 
-  # extract the S, I population counts
-  Ninf <- y[infectious]
-  Nsus <- y[susceptible]
-  
-  # if we are matching events
-  if (!is.null(seed)) {
-    # draw the same quantiles for each when
-    hash_seed(seed, t)
-    evtqs <- runif(2)
-    # convert these to the outcomes
-    newinf <- qbinom(evtqs[1], Nsus, 1-(1-transmission_p)^Ninf)
-    newrem <- qbinom(evtqs[2], Ninf, recovery_p)
-  } else { # simply make the binomial draws
-    newinf <- rbinom(1, Nsus, 1-(1-transmission_p)^Ninf)
-    newrem <- rbinom(1, Ninf, recovery_p)
-  }
-  
-  # move infectees S -> I, recoveries I -> R
-  dY <- c(S = -newinf, I = newinf - newrem, R = newrem)
-
-  if (t == vax_t) {
+    # if we are matching events
     if (!is.null(seed)) {
-      # n.b. still on a consistent PRNG state for this time, so can just draw
-      newvax <- qbinom(runif(1), Nsus - newinf, vaccination_p)
-    } else {
-      newvax <- rbinom(1, Nsus - newinf, vaccination_p)
+      # draw the same quantiles for each when
+      hash_seed(seed, t)
+      evtqs <- runif(2)
+      # convert these to the outcomes
+      newinf <- qbinom(evtqs[1], Nsus, 1 - (1 - transmission_p)^Ninf)
+      newrem <- qbinom(evtqs[2], Ninf, recovery_p)
+    } else { # simply make the binomial draws
+      newinf <- rbinom(1, Nsus, 1 - (1 - transmission_p)^Ninf)
+      newrem <- rbinom(1, Ninf, recovery_p)
     }
-    # move vaccinees
-    dY[susceptible] <- dY[susceptible] - newvax
-    dY[removed] <- dY[removed] + newvax
-  }
 
-  # return the overall state change, as well as new incidence
-  return(list(dY, newinf))
-})
+    # move infectees S -> I, recoveries I -> R
+    dY <- c(S = -newinf, I = newinf - newrem, R = newrem)
+
+    if (t == vax_t) {
+      if (!is.null(seed)) {
+        # n.b. still on a consistent PRNG state for this time, so can just draw
+        newvax <- qbinom(runif(1), Nsus - newinf, vaccination_p)
+      } else {
+        newvax <- rbinom(1, Nsus - newinf, vaccination_p)
+      }
+      # move vaccinees
+      dY[susceptible] <- dY[susceptible] - newvax
+      dY[removed] <- dY[removed] + newvax
+    }
+
+    # return the overall state change, as well as new incidence
+    return(list(dY, newinf))
+  })
+}
 ```
 
 ## Higher Resolution Implementation
@@ -206,54 +207,58 @@ but likely become less practical with increasing complexity.
 #' @param parameters a list, `transmission_p`, `recovery_p`, `vaccination_p`,
 #'   and `vax_t`
 #' @param salt an integer scalar, optional; if present, use hash-based matching
-identity_dStep <- function(t, y, parameters, salt = NULL) with(parameters, {
-  N <- length(y)
-  dY <- integer(N)
-  incI <- 0
-  # consider whether each infectious individual exposes susceptible
-  # individuals
-  infectable <- which(y == susceptible)
-  for (infector in which(y == infectious)) if (length(infectable)) {
-    if (!is.null(salt)) {
-      # if HBM, need to reseed RNG for each pair => draw
-      # easier to salt => draw all possible => slice relevant
-      hash_seed(salt, "inf", infector, t)
-      infectees <- infectable[
-        (runif(tail(infectable, 1)) < transmission_p)[infectable]
-      ]
-    } else {
-      infectees <- sample(
-        infectable, rbinom(1, length(infectable), transmission_p)
-      )
+identity_dStep <- function(t, y, parameters, salt = NULL) {
+  with(parameters, {
+    N <- length(y)
+    dY <- integer(N)
+    incI <- 0
+    # consider whether each infectious individual exposes susceptible
+    # individuals
+    infectable <- which(y == susceptible)
+    for (infector in which(y == infectious)) {
+      if (length(infectable)) {
+        if (!is.null(salt)) {
+          # if HBM, need to reseed RNG for each pair => draw
+          # easier to salt => draw all possible => slice relevant
+          hash_seed(salt, "inf", infector, t)
+          infectees <- infectable[
+            (runif(tail(infectable, 1)) < transmission_p)[infectable]
+          ]
+        } else {
+          infectees <- sample(
+            infectable, rbinom(1, length(infectable), transmission_p)
+          )
+        }
+        dY[infectees] <- 1
+        infectable <- setdiff(infectable, infectees)
+        # if this infector would recovery, indicate 2 => 3 transition
+        if (runif(1) < recovery_p) dY[infector] <- 1
+      }
     }
-    dY[infectees] <- 1
-    infectable <- setdiff(infectable, infectees)
-    # if this infector would recovery, indicate 2 => 3 transition
-    if(runif(1) < recovery_p) dY[infector] <- 1
-  }
-  
-  incI <- sum((dY == 1) & (y != infectious))
-  
-  # if its time for vaccination
-  if (t == vax_t) {
-    if (!is.null(salt)) {
-      # if HBM, need to reseed for each individual
-      # include the t here - what if the model changed vax_t?
-      psalt <- hash_seed(salt, "vax", t)
-      vaccinees <- infectable[
-        (runif(tail(infectable, 1)) < vaccination_p)[infectable]
-      ]
-    } else {
-      vaccinees <- sample(
-        infectable, rbinom(1, length(infectable), vaccination_p)
-      )
-    }
-    # for people still susceptible, indicate 1 => 3 transition
-    dY[vaccinees] <- 2
-  }
 
-  return(list(dY, incI))
-})
+    incI <- sum((dY == 1) & (y != infectious))
+
+    # if its time for vaccination
+    if (t == vax_t) {
+      if (!is.null(salt)) {
+        # if HBM, need to reseed for each individual
+        # include the t here - what if the model changed vax_t?
+        psalt <- hash_seed(salt, "vax", t)
+        vaccinees <- infectable[
+          (runif(tail(infectable, 1)) < vaccination_p)[infectable]
+        ]
+      } else {
+        vaccinees <- sample(
+          infectable, rbinom(1, length(infectable), vaccination_p)
+        )
+      }
+      # for people still susceptible, indicate 1 => 3 transition
+      dY[vaccinees] <- 2
+    }
+
+    return(list(dY, incI))
+  })
+}
 ```
 
 # Comparison
@@ -283,8 +288,8 @@ pop <- 4000L
 maxt <- 75L
 initI <- 5L
 ps <- list(
-  transmission_p = 1 - exp(-0.78/pop),
-   # ~ 0.78 infections produced per day in fully susceptible pop
+  transmission_p = 1 - exp(-0.78 / pop),
+  # ~ 0.78 infections produced per day in fully susceptible pop
   recovery_p = 1 - exp(-0.44) # ~ 2.3 days infectious
   # implies R0 ~ 1.8
 )
@@ -302,10 +307,8 @@ yinit[1:initI] <- infectious
 yinit_nonid <- c(pop - initI, initI, 0L)
 
 stepper <- function(
-  maxtime = maxt, y0,
-  dFUN, pars, seed, HBM
-) {
-  
+    maxtime = maxt, y0,
+    dFUN, pars, seed, HBM) {
   # if not HBM & a seed provided => SMO => set initial seeding
   if (!missing(seed) && !HBM) set.seed(seed)
 
@@ -317,7 +320,7 @@ stepper <- function(
   for (i in seq_len(maxtime)) {
     dY <- if (HBM) dFUN(i, y, pars, seed) else dFUN(i, y, pars)
     y <- y + dY[[1]]
-    res[i+1] <- dY[[2]]
+    res[i + 1] <- dY[[2]]
   }
 
   return(res)
@@ -332,76 +335,88 @@ for all the models.
 ```{r runsamples}
 set.seed(8675309)
 nonid_no_match <- system.time(
-  ni_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
-    type = "NON", model = "nonID",
-    not_i = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, HBM = FALSE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, HBM = FALSE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  ni_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "NON", model = "nonID",
+      not_i = cumsum(stepper(
+        y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, HBM = FALSE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, HBM = FALSE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 set.seed(8675309)
 id_no_match <- system.time(
-  wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
-    type = "NON", model = "ID",
-    not_i = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "NON", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 nonid_seed_match_only <- system.time(
-  ni_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
-    type = "SMO", model = "nonID",
-    not_i = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = FALSE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = FALSE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  ni_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "SMO", model = "nonID",
+      not_i = cumsum(stepper(
+        y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = FALSE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = FALSE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 id_seed_match_only <- system.time(
-  wi_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) data.table(
-    type = "SMO", model = "ID",
-    not_i = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = FALSE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = FALSE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  wi_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "SMO", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = FALSE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = FALSE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 nonid_hash_based_matching <- system.time(
-  ni_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) data.table(
-    type = "HBM", model = "nonID",
-    not_i = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = TRUE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = TRUE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  ni_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) {
+    data.table(
+      type = "HBM", model = "nonID",
+      not_i = cumsum(stepper(
+        y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = nonps, seed = seed, HBM = TRUE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit_nonid, dFUN = nonidentity_dStep, pars = intps, seed = seed, HBM = TRUE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 id_hash_based_matching <- system.time(
-  wi_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) data.table(
-    type = "HBM", model = "ID",
-    not_i = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = TRUE
-    )),
-    withi = cumsum(stepper(
-      y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = TRUE
-    ))
-  ), mc.cores = 5) |> rbindlist(idcol = "sample")
+  wi_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) {
+    data.table(
+      type = "HBM", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = TRUE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = TRUE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
 sampledt <- rbind(ni_non_dt, wi_non_dt, ni_smo_dt, wi_smo_dt, ni_hbm_dt, wi_hbm_dt)
@@ -428,15 +443,18 @@ Now we compute the difference in series, and determine if there are any to drop:
 ```{r summarycalcs}
 sampledt[, averted := not_i - withi]
 sampledt[, time := seq_len(.N) - 1L, by = .(type, model, sample)]
-keepers <- sampledt[, .(keep = not_i[intps$vax_t+1L] != not_i[.N]), by = .(type, model, sample)]
-keepers[, sum(keep)/.N, by = .(model, type)]
+keepers <- sampledt[, .(keep = not_i[intps$vax_t + 1L] != not_i[.N]), by = .(type, model, sample)]
+keepers[, sum(keep) / .N, by = .(model, type)]
 
 reduced_dt <- sampledt[keepers, on = .(type, model, sample)][keep == TRUE]
 
-qtiled_dt <- reduced_dt[,{
-  qs <- quantile(averted, probs = c(0.25, 0.5, 0.75))
-  .(lo = qs[1], md = qs[2], hi = qs[3])
-}, by = .(type, model, time)]
+qtiled_dt <- reduced_dt[,
+  {
+    qs <- quantile(averted, probs = c(0.25, 0.5, 0.75))
+    .(lo = qs[1], md = qs[2], hi = qs[3])
+  },
+  by = .(type, model, time)
+]
 ```
 
 ... and lastly, we should visualize these
@@ -447,33 +465,40 @@ ggplot(reduced_dt) +
   facet_grid(. ~ model) +
   geom_line(alpha = 0.2) +
   scale_color_discrete(NULL, guide = guide_legend(override.aes = list(alpha = 1))) +
-  theme_minimal() + theme(
+  theme_minimal() +
+  theme(
     legend.position = c(1, 1) - 0.05, legend.justification = c(1, 1)
   )
 ```
 
 ```{r ribbons, echo=FALSE, out.width="100%"}
-ggplot(qtiled_dt) + aes(time) +
+ggplot(qtiled_dt) +
+  aes(time) +
   facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
   scale_color_discrete(
-    NULL, aesthetics = c("color", "fill")
+    NULL,
+    aesthetics = c("color", "fill")
   ) +
-  theme_minimal() + theme(
+  theme_minimal() +
+  theme(
     legend.position = c(1, 1) - 0.05, legend.justification = c(1, 1)
   )
 ```
 
 ```{r noncrazyribbons, echo=FALSE, out.width="100%"}
-ggplot(qtiled_dt[type != "NON"]) + aes(time) +
+ggplot(qtiled_dt[type != "NON"]) +
+  aes(time) +
   facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
   scale_color_discrete(
-    NULL, aesthetics = c("color", "fill")
+    NULL,
+    aesthetics = c("color", "fill")
   ) +
-  theme_minimal() + theme(
+  theme_minimal() +
+  theme(
     legend.position = c(1, 1) - 0.05, legend.justification = c(1, 1)
   )
 ```

@@ -1,4 +1,3 @@
-
 #' @title Hash-Based Matching Pseudo-Random Number Generation
 #'
 #' @details

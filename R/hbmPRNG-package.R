@@ -1,4 +1,3 @@
-
 ## usethis namespace: start
 #' @useDynLib hbmPRNG, .registration = TRUE
 #' @importFrom Rcpp evalCpp
