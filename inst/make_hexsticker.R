@@ -35,7 +35,7 @@ hex_plot <- plot_dt[
   between(tm, 10, 40) & sample == max_split
 ] |>
   ggplot() +
-  aes(x = tm, y = log(value), fill = variable) +
+  aes(x = tm, y = value, fill = variable) +
   geom_hex(alpha = 0.5) +
   theme_void() +
   theme_transparent() +
