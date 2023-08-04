@@ -22,7 +22,7 @@ hex_plot <- mtcars |>
 # make and save hexsticker
 sticker(
   hex_plot,
-  package = "hbmPRNG",
+  package = "hashprng",
   p_size = 23,
   p_color = "#646770",
   s_x = 1,

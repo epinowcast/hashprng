@@ -1,4 +1,4 @@
-Package: hbmPRNG
+Package: hashprng
 Type: Package
 Title: Hash-Based Matching Pseudo-Random Number Generation
 Version: 0.2.0.1000

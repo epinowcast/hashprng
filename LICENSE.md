@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright (c) 2023 hbmPRNG authors
+Copyright (c) 2023 hashprng authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,5 +25,5 @@ SOFTWARE.
 MurmurHash3 was written by Austin Appleby, and is placed in the public
 domain. Austin Appleby disclaims copyright to this source code.
 
-The hbmPRNG authors copyright does NOT include any claims to MurmurHash3. The
+The hashprng authors copyright does NOT include any claims to MurmurHash3. The
 Rcpp-based adaptation of MurmurHash3 is placed in the public domain.

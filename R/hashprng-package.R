@@ -1,15 +1,15 @@
 ## usethis namespace: start
-#' @useDynLib hbmPRNG, .registration = TRUE
+#' @useDynLib hashprng, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 ## usethis namespace: end
 NULL
 
-#' hbmPRNG: Hash-Based Matching Pseudo-Random Number Generation
+#' hashprng: Hash-Based Matching Pseudo-Random Number Generation
 #'
-#' The hbmPRNG package provides single function for use during stochastic
+#' The hashprng package provides single function for use during stochastic
 #' simulation to streamline salting + event hashing + reseeding the R random
 #' number generator. The sole function in the package is `hash_seed`.
 #'
 #' @docType package
-#' @name hbmPRNG
+#' @name hashprng
 NULL

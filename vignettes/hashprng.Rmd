@@ -2,7 +2,7 @@
 title: "Hash-based Matched Pseudo-Random Number Generation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{hbmPRNG}
+  %\VignetteIndexEntry{hashprng}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo=FALSE}
-library(hbmPRNG)
+library(hashprng)
 # required for vignette knitting only
 library(Rcpp)
 # used for data transformation + plotting
@@ -27,7 +27,7 @@ library(parallel)
 
 # Overview
 
-This vignette demonstrates the practical use of `hbmPRNG::hash_seed`; if you
+This vignette demonstrates the practical use of `hashprng::hash_seed`; if you
 want a detailed explanation of *why* to use this approach, read the paper
 associated with the package citation: (TODO).
 
@@ -40,7 +40,7 @@ cross-scenario varying features.
 
 However, researchers still need to specify what constitutes "the same" event,
 both in terms of what features are hashed and how they implement the model
-structure. In this vignette, we focus on how to use `hbmPRNG::hash_seed`, but do
+structure. In this vignette, we focus on how to use `hashprng::hash_seed`, but do
 so using two different implementations of the same model world and two different
 definitions of "same" for events.
 

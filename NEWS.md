@@ -1,4 +1,4 @@
-# hbmPRNG 0.2.0
+# hashprng 0.2.0
 
 * Added GitHub Actions for CI
 * Added a `NEWS.md` file to track changes to the package.
@@ -9,6 +9,6 @@
 * Added `pkgdown` to generate the package documentation as a website
 * Added a package README.
 
-# hbmPRNG 0.1.0
+# hashprng 0.1.0
 
 * Initial package version

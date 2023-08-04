@@ -3,4 +3,4 @@
 export(hash_salt)
 export(hash_seed)
 importFrom(Rcpp,evalCpp)
-useDynLib(hbmPRNG, .registration = TRUE)
+useDynLib(hashprng, .registration = TRUE)
