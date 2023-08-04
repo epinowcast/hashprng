@@ -21,7 +21,8 @@ Hash-Based Matching Pseudo-Random Number Generation
 These functions provide convenient invocation for hash-based matching
 pseudo-random generation (HBM-PRNG).
 
-\code{hash_seed} uses a \code{salt} value along with distinguishing features of an event.
+\code{hash_seed} uses a \code{salt} value along with distinguishing features of an
+event.
 Typically, \code{salt} distinguishes an overall sample simulation, but it can also
 be a temporarily computed value for events that share some-but-not all
 features.
