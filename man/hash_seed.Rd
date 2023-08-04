@@ -23,7 +23,8 @@ pseudo-random generation (HBM-PRNG).
 
 \code{hash_seed} uses a \code{salt} value along with distinguishing features of an event.
 Typically, \code{salt} distinguishes an overall sample simulation, but it can also
-be a temporarily computed value for events that share some-but-not all features.
+be a temporarily computed value for events that share some-but-not all
+features.
 
 \code{hash_salt} computes a \emph{partial} hash, for when several events need draws,
 but share a partially consistent feature set. The result of \code{hash_salt}

@@ -7,7 +7,8 @@
 #'
 #' `hash_seed` uses a `salt` value along with distinguishing features of an event.
 #' Typically, `salt` distinguishes an overall sample simulation, but it can also
-#' be a temporarily computed value for events that share some-but-not all features.
+#' be a temporarily computed value for events that share some-but-not all
+#' features.
 #'
 #' `hash_salt` computes a _partial_ hash, for when several events need draws,
 #' but share a partially consistent feature set. The result of `hash_salt`
