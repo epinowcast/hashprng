@@ -1,14 +1,24 @@
+
 library(hashprng)
 library(data.table)
 library(hexSticker)
 library(sysfonts)
 library(ggplot2)
 
+.args <- if (interactive()) {
+  c(
+    file.path("inst", "basic_vignette.rda"),
+    file.path("man", "figures", "logo.png")
+  )
+} else {
+  commandArgs(trailingOnly = TRUE)
+}
+
 # font setup
 font_add_google("Zilla Slab Highlight", "useme")
 
 # strip out most of the background
-load("inst/basic_vignette.rda")
+load(.args[1])
 
 spag_plot <- reduced_dt[
   sample <= 250 & 
@@ -46,7 +56,7 @@ sticker(
   s_height = 1.2,
   h_fill = "#ffffff",
   h_color = "#2c3d70",
-  filename = file.path("man", "figures", "logo.png"),
+  filename = tail(.args, 1),
   url = "hashprng.epinowcast.org",
   u_color = "#2c3d70",
   u_size = 3.5

@@ -5,14 +5,14 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![R-CMD-check](https://github.com/pearsonca/hashprng/workflows/R-CMD-check/badge.svg)](https://github.com/epinowcast/epinowcast/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg)](https://github.com/epinowcast/epinowcast/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/pearsonca/hashprng/branch/main/graph/badge.svg)](https://app.codecov.io/gh/pearsonca/hashprng)
+coverage](https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg)](https://app.codecov.io/gh/epinowcast/hashprng)
 
 [![MIT
-license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/pearsonca/hashprng/blob/master/LICENSE.md/)
+license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epinowcast/hashprng/blob/master/LICENSE.md/)
 [![GitHub
-contributors](https://img.shields.io/github/contributors/pearsonca/hashprng)](https://github.com/pearsonca/hashprng/graphs/contributors)
+contributors](https://img.shields.io/github/contributors/epinowcast/hashprng)](https://github.com/epinowcast/hashprng/graphs/contributors)
 
 Helper functions for use of hash-based matching (HBM) for pseudo-random
 number generation (PRNG) in stochastic simulations. HBM-PRNG is an
@@ -22,16 +22,16 @@ their chance events.
 
 ## Getting started and learning more
 
-This README is a good place to get started with `hashprng`, in particular
-the following installation and quick start sections. As you make use of
-the package, or if your problem requires a richer feature set than
-presented here, we also provide a range of other reosources.
+This README is a good place to get started with `hashprng`, in
+particular the following installation and quick start sections. As you
+make use of the package, or if your problem requires a richer feature
+set than presented here, we also provide a range of other reosources.
 
--   [Package website](): This includes a function reference, model
-    outline, and case studies making use of the package. This site
-    refers to the release version of our package. The development
-    version of our documentation (corresponding to our `main` branch on
-    GitHub) is available [here]().
+- [Package website](): This includes a function reference, model
+  outline, and case studies making use of the package. This site refers
+  to the release version of our package. The development version of our
+  documentation (corresponding to our `main` branch on GitHub) is
+  available [here]().
 
 ## Installation
 
@@ -42,7 +42,7 @@ changes or the introduction of bugs during development this version may
 contain both) from GitHub using the following,
 
 ``` r
-remotes::install_github("pearsonca/hashprng", dependencies = TRUE)
+remotes::install_github("epinowcast/hashprng", dependencies = TRUE)
 ```
 
 ## Quick start
@@ -54,8 +54,11 @@ In this quick start …
 If you use `hashprng` in your work, please consider citing it using the
 following,
 
-    #> Warning in citation("hashprngg"): could not determine year for 'hashprng' from
+    #> Warning in citation("hashprng"): no date field in DESCRIPTION file of package
+    #> 'hashprng'
+    #> Warning in citation("hashprng"): could not determine year for 'hashprng' from
     #> package DESCRIPTION file
+    #> 
     #> To cite package 'hashprng' in publications use:
     #> 
     #>   Pearson C (????). _hashprng: Hash-Based Matching Pseudo-Random Number
@@ -72,22 +75,22 @@ following,
 ## How to make a bug report or feature request
 
 Please briefly describe your problem and what output you expect in an
-[issue](https://github.com/pearsonca/hashprng/issues). If you have a
+[issue](https://github.com/epinowcast/hashprng/issues). If you have a
 question, please don’t open an issue. Instead, ask on our [Q and A
-page](https://github.com/pearsonca/hashprng/discussions/categories/q-a).
+page](https://github.com/epinowcast/hashprng/discussions/categories/q-a).
 See our [contributing
-guide](https://github.com/pearsonca/hashprng/blob/main/CONTRIBUTING.md)
+guide](https://github.com/epinowcast/hashprng/blob/main/CONTRIBUTING.md)
 for more information.
 
 ## Contributing
 
 We welcome contributions and new contributors! We particularly
 appreciate help on priority problems in the
-[issues](https://github.com/pearsonca/hashprng/issues). Please check and
-add to the issues, and/or add a [pull
-request](https://github.com/pearsonca/hashprng/pulls). See our
+[issues](https://github.com/epinowcast/hashprng/issues). Please check
+and add to the issues, and/or add a [pull
+request](https://github.com/epinowcast/hashprng/pulls). See our
 [contributing
-guide](https://github.com/pearsonca/hashprng/blob/main/CONTRIBUTING.md)
+guide](https://github.com/epinowcast/hashprng/blob/main/CONTRIBUTING.md)
 for more information.
 
 ## Code of Conduct

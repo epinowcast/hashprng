@@ -33,8 +33,10 @@ yinit_nonid <- c(pop - initI, initI, 0L)
 ncores <- parallel::detectCores() - 1L
 
 stepper <- function(
-    maxtime = maxt, y0,
-    dFUN, pars, seed, HBM) {
+  maxtime = maxt, y0,
+  dFUN, pars, seed, HBM
+) {
+
   # if not HBM & a seed provided => SMO => set initial seeding
   if (!missing(seed) && !HBM) set.seed(seed)
 
