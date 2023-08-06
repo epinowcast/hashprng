@@ -68,6 +68,67 @@ hash_salt <- function(salt, ...) {
   # first, send all the `...` arguments to binary representation
   # HAEC SUNT DRACONES: leaves all error handling to `writeBin`
   # handling for empty ...?
-  binned <- unlist(lapply(list(...), writeBin, con = raw()))
+  binned <- writeBin(c(...), con = raw())
   return(.Call('_hashprng_digest', salt, binned, PACKAGE = 'hashprng'))
+}
+
+#' @title Vectorized Hash-then-Uniform Deviate
+#'
+#' @description Provides an optimized approach to a typical use case: drawing a
+#' single deviate each for a series of related events. These events have the
+#' same partial hash, but each differ by a single feature (e.g. an ID value).
+#'
+#' @inheritParams salt hash_seed
+#'
+#' @param keys a vector of elements
+#'
+#' @details
+#'
+#' The distinguishing features can be provided via the `keys` argument. This
+#' allows you to effectively replace
+#'
+#' ```
+#' psalt <- hash_salt(salt, shared, distinguishing, variables)
+#' for (feature in keys) {
+#'   hash_seed(psalt, feature)
+#'   store[[feature]] <- runif(1)
+#' }
+#' # ... use store somehow
+#' ```
+#'
+#' with
+#'
+#' ```
+#' psalt <- hash_salt(salt, shared, distinguishing, variables)
+#' store <- hash_runif(psalt, keys)
+#' ```
+#'
+#' This is substantially faster to compute.
+#' @export
+hash_runif <- function(salt, keys) {
+
+}
+
+#' @rdname hash_runif
+#' @export
+hash_runif.default <- function(salt, keys) {
+
+}
+
+#' @rdname hash_runif
+#' @export
+hash_runif.numeric <- function(salt, keys) {
+
+}
+
+#' @rdname hash_runif
+#' @export
+hash_runif.integer <- function(salt, keys) {
+
+}
+
+#' @rdname hash_runif
+#' @export
+hash_runif.character <- function(salt, keys) {
+
 }
