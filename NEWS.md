@@ -1,3 +1,5 @@
+# hashprng 0.3.0
+
 # hashprng 0.2.0
 
 * Added GitHub Actions for CI
