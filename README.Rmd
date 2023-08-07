@@ -36,6 +36,13 @@ This README is a good place to get started with `hashprng`, in particular the fo
 
 ### Installing the package
 
+
+Install the latest GitHub released version of the package with:
+
+```{r, eval = FALSE}
+install.packages("hashprng", repos = "https://epinowcast.r-universe.dev")
+```
+
 Install the development version (whilst we strive to limit breaking changes or the introduction of bugs during development this version may contain both) from GitHub using the following,
 
 ```{r, eval = FALSE}
