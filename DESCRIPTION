@@ -7,7 +7,11 @@ Authors@R:
              family = "Pearson",
              role = c("aut", "cre"),
              email = "carl.ab.pearson@gmail.com",
-             comment = c(ORCID = "0000-0003-0701-7860")))
+             comment = c(ORCID = "0000-0003-0701-7860")),
+      person(given = "Sam Abbott",
+             role = c("aut"),
+             email = "contact@samabbott.co.uk",
+             comment = c(ORCID = "0000-0001-8057-8037")))
 Description: Provides helper functions for use of hash-based matching (HBM)
     for pseudo-random number generation (PRNG) in stochastic simulations.
     HBM-PRNG is an approach to simplify matching synthetic experiment samples,
