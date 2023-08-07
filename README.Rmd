@@ -13,11 +13,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Hash-Based Matching Pseudo-Random Number Generation <a href='https://package.epinowcast.org'><img src='man/figures/logo.png' align="right" height="139" /></a>
+# Hash-Based Matching Pseudo-Random Number Generation <a href='https://hashprng.epinowcast.org'><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![R-CMD-check](https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg)](https://github.com/epinowcast/epinowcast/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg)](https://app.codecov.io/gh/epinowcast/hashprng)
+[![R-CMD-check](https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg)](https://github.com/epinowcast/hashprng/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg)](https://app.codecov.io/gh/epinowcast/hashprng)
 
 [![MIT
 license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epinowcast/hashprng/blob/main/LICENSE.md/)

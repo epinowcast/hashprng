@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Hash-Based Matching Pseudo-Random Number Generation <a href='https://package.epinowcast.org'><img src='man/figures/logo.png' align="right" height="139" /></a>
+# Hash-Based Matching Pseudo-Random Number Generation <a href='https://hashprng.epinowcast.org'><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
