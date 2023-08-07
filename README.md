@@ -5,10 +5,11 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![R-CMD-check](https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg)](https://github.com/epinowcast/epinowcast/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg)](https://github.com/epinowcast/hashprng/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg)](https://app.codecov.io/gh/epinowcast/hashprng)
 
+[![Universe](https://epinowcast.r-universe.dev/badges/hashprng)](https://epinowcast.r-universe.dev/hashprng)
 [![MIT
 license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epinowcast/hashprng/blob/main/LICENSE.md/)
 [![GitHub
@@ -27,11 +28,11 @@ particular the following installation and quick start sections. As you
 make use of the package, or if your problem requires a richer feature
 set than presented here, we also provide a range of other reosources.
 
-- [Package website](): This includes a function reference, model
-  outline, and case studies making use of the package. This site refers
-  to the release version of our package. The development version of our
-  documentation (corresponding to our `main` branch on GitHub) is
-  available [here]().
+  - [Package website](): This includes a function reference, model
+    outline, and case studies making use of the package. This site
+    refers to the release version of our package. The development
+    version of our documentation (corresponding to our `main` branch on
+    GitHub) is available [here]().
 
 ## Installation
 
@@ -54,22 +55,19 @@ In this quick start …
 If you use `hashprng` in your work, please consider citing it using the
 following,
 
-    #> Warning in citation("hashprng"): no date field in DESCRIPTION file of package
-    #> 'hashprng'
     #> Warning in citation("hashprng"): could not determine year for 'hashprng' from
     #> package DESCRIPTION file
-    #> 
     #> To cite package 'hashprng' in publications use:
     #> 
     #>   Pearson C (????). _hashprng: Hash-Based Matching Pseudo-Random Number
-    #>   Generation_. R package version 0.2.0.1000.
+    #>   Generation_. R package version 0.3.0.1000.
     #> 
     #> A BibTeX entry for LaTeX users is
     #> 
     #>   @Manual{,
     #>     title = {hashprng: Hash-Based Matching Pseudo-Random Number Generation},
     #>     author = {Carl Pearson},
-    #>     note = {R package version 0.2.0.1000},
+    #>     note = {R package version 0.3.0.1000},
     #>   }
 
 ## How to make a bug report or feature request
@@ -84,7 +82,7 @@ for more information.
 
 ## Contributing
 
-We welcome contributions and new contributors! We particularly
+We welcome contributions and new contributors\! We particularly
 appreciate help on priority problems in the
 [issues](https://github.com/epinowcast/hashprng/issues). Please check
 and add to the issues, and/or add a [pull
