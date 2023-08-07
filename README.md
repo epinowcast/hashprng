@@ -10,7 +10,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 coverage](https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg)](https://app.codecov.io/gh/epinowcast/hashprng)
 
 [![MIT
-license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epinowcast/hashprng/blob/master/LICENSE.md/)
+license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epinowcast/hashprng/blob/main/LICENSE.md/)
 [![GitHub
 contributors](https://img.shields.io/github/contributors/epinowcast/hashprng)](https://github.com/epinowcast/hashprng/graphs/contributors)
 

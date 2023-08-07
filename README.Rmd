@@ -20,7 +20,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![R-CMD-check](https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg)](https://github.com/epinowcast/epinowcast/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg)](https://app.codecov.io/gh/epinowcast/hashprng)
 
 [![MIT
-license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epinowcast/hashprng/blob/master/LICENSE.md/)
+license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epinowcast/hashprng/blob/main/LICENSE.md/)
 [![GitHub contributors](https://img.shields.io/github/contributors/epinowcast/hashprng)](https://github.com/epinowcast/hashprng/graphs/contributors)
 
 Helper functions for use of hash-based matching (HBM) for pseudo-random number generation (PRNG) in stochastic simulations. HBM-PRNG is an approach to simplify matching synthetic experiment samples, which ensures that matched runs different only in the focal parameters, not in their chance events.
