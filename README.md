@@ -28,11 +28,11 @@ particular the following installation and quick start sections. As you
 make use of the package, or if your problem requires a richer feature
 set than presented here, we also provide a range of other reosources.
 
-  - [Package website](): This includes a function reference, model
-    outline, and case studies making use of the package. This site
-    refers to the release version of our package. The development
-    version of our documentation (corresponding to our `main` branch on
-    GitHub) is available [here]().
+- [Package website](): This includes a function reference, model
+  outline, and case studies making use of the package. This site refers
+  to the release version of our package. The development version of our
+  documentation (corresponding to our `main` branch on GitHub) is
+  available [here]().
 
 ## Installation
 
@@ -61,11 +61,9 @@ In this quick start …
 If you use `hashprng` in your work, please consider citing it using the
 following,
 
-    #> Warning in citation("hashprng"): could not determine year for 'hashprng' from
-    #> package DESCRIPTION file
     #> To cite package 'hashprng' in publications use:
     #> 
-    #>   Pearson C (????). _hashprng: Hash-Based Matching Pseudo-Random Number
+    #>   Pearson C (2023). _hashprng: Hash-Based Matching Pseudo-Random Number
     #>   Generation_. R package version 0.3.0.1000.
     #> 
     #> A BibTeX entry for LaTeX users is
@@ -73,6 +71,7 @@ following,
     #>   @Manual{,
     #>     title = {hashprng: Hash-Based Matching Pseudo-Random Number Generation},
     #>     author = {Carl Pearson},
+    #>     year = {2023},
     #>     note = {R package version 0.3.0.1000},
     #>   }
 
@@ -88,7 +87,7 @@ for more information.
 
 ## Contributing
 
-We welcome contributions and new contributors\! We particularly
+We welcome contributions and new contributors! We particularly
 appreciate help on priority problems in the
 [issues](https://github.com/epinowcast/hashprng/issues). Please check
 and add to the issues, and/or add a [pull
