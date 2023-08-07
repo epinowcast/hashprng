@@ -70,8 +70,8 @@
 <a class="anchor" aria-label="anchor" href="#hash-based-matching-pseudo-random-number-generation-"></a>
 </h1>
 </div>
-<p><a href="https://www.tidyverse.org/lifecycle/#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/epinowcast/epinowcast/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/epinowcast/hashprng" class="external-link"><img src="https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></p>
-<p><a href="https://github.com/epinowcast/hashprng/blob/main/LICENSE.md/" class="external-link"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT license"></a> <a href="https://github.com/epinowcast/hashprng/graphs/contributors" class="external-link"><img src="https://img.shields.io/github/contributors/epinowcast/hashprng" alt="GitHub contributors"></a></p>
+<p><a href="https://www.tidyverse.org/lifecycle/#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/epinowcast/hashprng/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/epinowcast/hashprng/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/epinowcast/hashprng" class="external-link"><img src="https://codecov.io/gh/epinowcast/hashprng/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></p>
+<p><a href="https://epinowcast.r-universe.dev/hashprng" class="external-link"><img src="https://epinowcast.r-universe.dev/badges/hashprng" alt="Universe"></a> <a href="https://github.com/epinowcast/hashprng/blob/main/LICENSE.md/" class="external-link"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT license"></a> <a href="https://github.com/epinowcast/hashprng/graphs/contributors" class="external-link"><img src="https://img.shields.io/github/contributors/epinowcast/hashprng" alt="GitHub contributors"></a></p>
 <p>Helper functions for use of hash-based matching (HBM) for pseudo-random number generation (PRNG) in stochastic simulations. HBM-PRNG is an approach to simplify matching synthetic experiment samples, which ensures that matched runs different only in the focal parameters, not in their chance events.</p>
 <div class="section level2">
 <h2 id="getting-started-and-learning-more">Getting started and learning more<a class="anchor" aria-label="anchor" href="#getting-started-and-learning-more"></a>
@@ -102,23 +102,20 @@
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>hashprng</code> in your work, please consider citing it using the following,</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning in citation("hashprng"): no date field in DESCRIPTION file of package</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 'hashprng'</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning in citation("hashprng"): could not determine year for 'hashprng' from</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; package DESCRIPTION file</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; To cite package 'hashprng' in publications use:</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning in citation("hashprng"): could not determine year for 'hashprng' from</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; package DESCRIPTION file</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; To cite package 'hashprng' in publications use:</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Pearson C (????). _hashprng: Hash-Based Matching Pseudo-Random Number</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Generation_. R package version 0.3.0.1000.</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Pearson C (????). _hashprng: Hash-Based Matching Pseudo-Random Number</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Generation_. R package version 0.2.0.1000.</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   @Manual{,</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     title = {hashprng: Hash-Based Matching Pseudo-Random Number Generation},</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     author = {Carl Pearson},</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     note = {R package version 0.2.0.1000},</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   }</span></span></code></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   @Manual{,</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     title = {hashprng: Hash-Based Matching Pseudo-Random Number Generation},</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     author = {Carl Pearson},</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     note = {R package version 0.3.0.1000},</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   }</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="how-to-make-a-bug-report-or-feature-request">How to make a bug report or feature request<a class="anchor" aria-label="anchor" href="#how-to-make-a-bug-report-or-feature-request"></a>
