@@ -28,11 +28,12 @@ particular the following installation and quick start sections. As you
 make use of the package, or if your problem requires a richer feature
 set than presented here, we also provide a range of other reosources.
 
-- [Package website](): This includes a function reference, model
-  outline, and case studies making use of the package. This site refers
-  to the release version of our package. The development version of our
-  documentation (corresponding to our `main` branch on GitHub) is
-  available [here]().
+- [Package website](https://hashprng.epinowcast.org/): This includes a
+  function reference, model outline, and case studies making use of the
+  package. This site refers to the release version of our package. The
+  development version of our documentation (corresponding to our `main`
+  branch on GitHub) is available
+  [here](https://hashprng.epinowcast.org/dev/).
 
 ## Installation
 
