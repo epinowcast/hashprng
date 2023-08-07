@@ -38,6 +38,12 @@ set than presented here, we also provide a range of other reosources.
 
 ### Installing the package
 
+Install the latest GitHub released version of the package with:
+
+``` r
+install.packages("hashprng", repos = "https://epinowcast.r-universe.dev")
+```
+
 Install the development version (whilst we strive to limit breaking
 changes or the introduction of bugs during development this version may
 contain both) from GitHub using the following,
