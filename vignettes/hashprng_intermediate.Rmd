@@ -474,9 +474,7 @@ ggplot(reduced_dt) +
 ```{r ribbons, echo=FALSE, out.width="100%"}
 ggplot(qtiled_dt) +
   aes(time) +
-  facet_grid(. ~ model, labeller = labeller(model = c(ID="Identifiable Individuals", nonID = "Indistinguishable Individuals"))) +
-  scale_y_continuous("Infections Averted") +
-  scale_x_continuous("Time Since Introduction") +
+  facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
   scale_color_discrete(
@@ -492,9 +490,7 @@ ggplot(qtiled_dt) +
 ```{r noncrazyribbons, echo=FALSE, out.width="100%"}
 ggplot(qtiled_dt[type != "NON"]) +
   aes(time) +
-  facet_grid(. ~ model, labeller = labeller(model = c(ID="Identifiable Individuals", nonID = "Indistinguishable Individuals"))) +
-  scale_y_continuous("Infections Averted") +
-  scale_x_continuous("Time Since Introduction") +
+  facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
   scale_color_discrete(

@@ -17,8 +17,6 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo=FALSE}
 library(hashprng)
-# required for vignette knitting only
-library(Rcpp)
 # used for data transformation + plotting
 library(data.table)
 library(ggplot2)
@@ -40,9 +38,10 @@ cross-scenario varying features.
 
 However, researchers still need to specify what constitutes "the same" event,
 both in terms of what features are hashed and how they implement the model
-structure. In this vignette, we focus on how to use `hashprng::hash_seed`, but do
-so using two different implementations of the same model world and two different
-definitions of "same" for events.
+structure. In this vignette, we focus on how to use `hashprng::hash_seed` only.
+For different phenomena, questions, and models, researchers will need to
+identify and implement the appropriate matching. Indeed, some questions do not
+call for matching.
 
 # Standards of Matching
 
@@ -50,8 +49,8 @@ Throughout this vignette we consider a few matching regimes:
 
  - Non-matched (NON): this is equivalent to drawing an item from this random
  process and then one from the same-but-slightly-perturbed process and comparing
- them. Note: this kind of simulation should still be seeded, to ensure
- reproducibile PRNG.
+ them. Note: this kind of simulation should still be seeded, to enable
+ reproducible PRNG.
  - Seed-Matched-Only (SMO): this scheme ensures that compared runs both have the
  same PRNG seeding. This can guarantee, for example, that the history leading up
  to an intervention is the same. However, generally once simulation trajectory
@@ -61,11 +60,11 @@ Throughout this vignette we consider a few matching regimes:
  their identical events resolved consistently. Any event which occurs in both
  simulations gets the same draw from the PRNG.
 
-Hash-based matched (HBM) PRNG is an approach to acheiving FEM simulations. There
+Hash-based matched (HBM) PRNG is an approach to achieving FEM simulations. There
 are alternatives, for example managing multiple PRNGs or precomputing all
 possible outcomes. In general, HBM imposes a guaranteed-but-low computational cost,
 scaling with the number of the PRNG draws in any given simulation, with minimal
-implementation burden on the modeller.
+implementation burden.
 
 We'll be making comparisons across NON, SMO, and HBM in terms of implementation,
 compute cost, and calculation resolution.
@@ -474,9 +473,7 @@ ggplot(reduced_dt) +
 ```{r ribbons, echo=FALSE, out.width="100%"}
 ggplot(qtiled_dt) +
   aes(time) +
-  facet_grid(. ~ model, labeller = labeller(model = c(ID="Identifiable Individuals", nonID = "Indistinguishable Individuals"))) +
-  scale_y_continuous("Infections Averted") +
-  scale_x_continuous("Time Since Introduction") +
+  facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
   scale_color_discrete(
@@ -492,9 +489,7 @@ ggplot(qtiled_dt) +
 ```{r noncrazyribbons, echo=FALSE, out.width="100%"}
 ggplot(qtiled_dt[type != "NON"]) +
   aes(time) +
-  facet_grid(. ~ model, labeller = labeller(model = c(ID="Identifiable Individuals", nonID = "Indistinguishable Individuals"))) +
-  scale_y_continuous("Infections Averted") +
-  scale_x_continuous("Time Since Introduction") +
+  facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
   scale_color_discrete(
