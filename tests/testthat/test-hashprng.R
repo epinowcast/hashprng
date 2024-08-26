@@ -13,10 +13,15 @@ test_that("set.salt establishes a locally scoped salt", {
 
 
 test_that("same salt + same object => same draws", {
-  set.salt(8675309)
+
+  salt <- 8675309
+  set.salt(salt)
+  expect_identical(salt, .hash.salt)
 
   evt1 <- list(type = 1L, from = 1L, to = 2L, time = 3.14)
   evt2 <- list(type = 1L, from = 1L, to = 2L, time = 3.14)
+
+  expect_no_error(set.hash(evt1, .hash.salt))
 
   draw1 <- runif(5, hash = evt1)
   draw2 <- runif(5, hash = evt2)

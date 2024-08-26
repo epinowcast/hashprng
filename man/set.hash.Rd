@@ -4,7 +4,7 @@
 \alias{set.hash}
 \title{Manage RNG state}
 \usage{
-set.hash(hash)
+set.hash(hash, .hash.salt)
 }
 \description{
 Manage RNG state

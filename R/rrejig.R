@@ -15,13 +15,12 @@
 #' @export
 rrejig <- function(rFUN) {
   .FUN <- rFUN # make a duplicate of FUN
-  formals(.FUN) <- c(formals(rFUN), alist(hash = ))
-  hashc <- str2lang("hashprng::set.hash(hash)")
+  formals(.FUN) <- c(formals(rFUN), alist(hash = , envir = parent.frame()))
+  hashc <- str2lang("set.hash(hash, envir$.hash.salt)")
   origc <- body(rFUN)
   body(.FUN) <- substitute({
     hashc
     origc
   })
-  environment(.FUN) <- environment(rFUN)
   return(.FUN)
 }

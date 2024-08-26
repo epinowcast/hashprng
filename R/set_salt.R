@@ -19,11 +19,13 @@ set.salt <- function(salt) {
 
 #' @title Manage RNG state
 #'
+#' @importFrom digest digest
 #' @export
-set.hash <- function(hash) {
+set.hash <- function(hash, .hash.salt) {
   if (!missing(hash)) {
-    set.seed(readBin(digest::digest(
-      list(.hash.salt, hash), algo = "xxhash32", raw = TRUE
+    obj <- list(.hash.salt, hash)
+    set.seed(readBin(digest(
+      obj, algo = "xxhash32", raw = TRUE
     ), "integer"))
   } else {
     warning("Using hash-prng methods without providing a hash.")
