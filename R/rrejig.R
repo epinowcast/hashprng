@@ -15,8 +15,8 @@
 #' @export
 rrejig <- function(rFUN) {
   .FUN <- rFUN # make a duplicate of FUN
-  formals(.FUN) <- c(formals(rFUN), alist(hash = , envir = parent.frame()))
-  hashc <- str2lang("set.hash(hash, envir$.hash.salt)")
+  formals(.FUN) <- c(formals(rFUN), alist(hash = ))
+  hashc <- str2lang("set.hash(hash, get('.hash.salt', envir = parent.frame()))")
   origc <- body(rFUN)
   body(.FUN) <- substitute({
     hashc
@@ -24,3 +24,9 @@ rrejig <- function(rFUN) {
   })
   return(.FUN)
 }
+
+#' @export
+sample <- rrejig(sample)
+
+#' @export
+sample.int <- rrejig(sample.int)
