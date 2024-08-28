@@ -35,7 +35,7 @@ test_that("diff salt + same object => diff draws", {
   draw1 <- runif(5, hash = evt1)
   set.salt(42)
   draw2 <- runif(5, hash = evt1)
-  expect_false(all(draw1 == draw2))
+  expect_false(any(draw1 == draw2))
 })
 
 test_that("same salt + diff object => diff draws", {

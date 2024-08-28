@@ -160,27 +160,22 @@ infection and recovery.
 #' @param salt an integer scalar, optional; if present, use hash-based matching
 m_dStep_ID <- function(t, y, parameters) {
   with(parameters, {
-    dY <- integer(length(y))
-    incI <- 0
-    # consider whether each infectious individual exposes susceptible
-    # individuals
-    infectable <- y == 1; infectors <- which(y == 2)
+    N <- length(y); dY <- integer(N);
+    infectable <- which(y == 1); infectors <- which(y == 2)
     for (infector in infectors) {
-      exposed <- runif(length(y), hash = list("I", infector, t)) < transmission_p
-      dY <- dY | (exposed & infectable)
+      expose <- (runif(N, hash = list("I", infector, t)) < transmission_p)[infectable]
+      dY[infectable] <- dY[infectable] + expose
     }
+    dY[dY > 0] <- 1
     incI <- sum(dY == 1)
-    for (infector in infectors) {
-      dY <- runif(1, hash = list("R", infector, t)) < recovery_p
-    }
-
     # if its time for vaccination
     if (t == vax_t) {
-      vaxable <- infectable & (dY != 1)
-      vaccinees <- (runif(length(infectable), hash = list("V")) < vaccination_p) & vaxable
+      vaxable <- setdiff(infectable, which(dY == 1))
       # for people still susceptible, indicate 1 => 3 transition
-      dY[vaccinees] <- 2
+      dY[vaxable] <- 2*(runif(N, hash = list("V")) < vaccination_p)[vaxable]
     }
+
+    dY[infectors] <- 1*(runif(N, hash = list("R", t)) < recovery_p)[infectors]
 
     return(list(dY, incI))
   })
@@ -189,7 +184,6 @@ m_dStep_ID <- function(t, y, parameters) {
 u_dStep_ID <- function(t, y, parameters) {
   with(parameters, {
     dY <- integer(length(y))
-    incI <- 0
     infectable <- y == 1; infectors <- y == 2
     incI <- stats::rbinom(1, sum(infectable), 1-(1 - transmission_p)^sum(infectors))
     infectees <- base::sample(
@@ -273,12 +267,12 @@ stepper <- function(maxtime = maxt, y0, dFUN, pars, seed, HBM) {
   
   # reserve data structure
   res <- integer(maxtime + 1)
-  res[1] <- 1
+  res[1] <- initI
   y <- y0
   # run the simulation
   for (i in seq_len(maxtime)) {
     dY <- dFUN(i, y, pars)
-    y <- y + dY[[1]]
+    y[] <- y[] + dY[[1]]
     res[i + 1] <- dY[[2]]
   }
 
@@ -308,20 +302,20 @@ nonid_no_match <- system.time(
   }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
-# set.seed(8675309)
-# id_no_match <- system.time(
-#   wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
-#     data.table(
-#       type = "NON", model = "ID",
-#       not_i = cumsum(stepper(
-#         y0 = yinit, dFUN = identity_dStep, pars = nonps, HBM = FALSE
-#       )),
-#       withi = cumsum(stepper(
-#         y0 = yinit, dFUN = identity_dStep, pars = intps, HBM = FALSE
-#       ))
-#     )
-#   }, mc.cores = 5) |> rbindlist(idcol = "sample")
-# )
+set.seed(8675309)
+id_no_match <- system.time(
+  wi_non_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "NON", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = u_dStep_ID, pars = nonps
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = u_dStep_ID, pars = intps
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+)
 
 nonid_seed_match_only <- system.time(
   ni_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
@@ -337,19 +331,19 @@ nonid_seed_match_only <- system.time(
   }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
-# id_seed_match_only <- system.time(
-#   wi_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
-#     data.table(
-#       type = "SMO", model = "ID",
-#       not_i = cumsum(stepper(
-#         y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = FALSE
-#       )),
-#       withi = cumsum(stepper(
-#         y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = FALSE
-#       ))
-#     )
-#   }, mc.cores = 5) |> rbindlist(idcol = "sample")
-# )
+id_seed_match_only <- system.time(
+  wi_smo_dt <- seq_len(samplen) |> parallel::mclapply(function(seed) {
+    data.table(
+      type = "SMO", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = u_dStep_ID, pars = nonps, seed = seed, HBM = FALSE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = u_dStep_ID, pars = intps, seed = seed, HBM = FALSE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+)
 
 nonid_hash_based_matching <- system.time(
   ni_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) {
@@ -365,22 +359,22 @@ nonid_hash_based_matching <- system.time(
   }, mc.cores = 5) |> rbindlist(idcol = "sample")
 )
 
-# id_hash_based_matching <- system.time(
-#   wi_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) {
-#     data.table(
-#       type = "HBM", model = "ID",
-#       not_i = cumsum(stepper(
-#         y0 = yinit, dFUN = identity_dStep, pars = nonps, seed = seed, HBM = TRUE
-#       )),
-#       withi = cumsum(stepper(
-#         y0 = yinit, dFUN = identity_dStep, pars = intps, seed = seed, HBM = TRUE
-#       ))
-#     )
-#   }, mc.cores = 5) |> rbindlist(idcol = "sample")
-# )
+id_hash_based_matching <- system.time(
+  wi_hbm_dt <- seq_len(samplen) |> mclapply(function(seed) {
+    data.table(
+      type = "FEM", model = "ID",
+      not_i = cumsum(stepper(
+        y0 = yinit, dFUN = m_dStep_ID, pars = nonps, seed = seed, HBM = TRUE
+      )),
+      withi = cumsum(stepper(
+        y0 = yinit, dFUN = m_dStep_ID, pars = intps, seed = seed, HBM = TRUE
+      ))
+    )
+  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+)
 
 sampledt <- rbind(
-  ni_non_dt, ni_smo_dt, ni_hbm_dt #, wi_non_dt, wi_smo_dt, wi_hbm_dt
+  ni_non_dt, ni_smo_dt, ni_hbm_dt, wi_non_dt, wi_smo_dt, wi_hbm_dt
 )
 ```
 Timings:
@@ -417,46 +411,62 @@ qtiled_dt <- sampledt[,
 
 ... and lastly, we should visualize these
 
-```{r spaghetti, echo=FALSE, out.width="100%"}
-ggplot(sampledt) +
-  aes(time, averted, color = type, group = interaction(type, sample)) +
-  facet_grid(. ~ model) +
-  geom_line(alpha = 0.2) +
-  scale_color_discrete(NULL, guide = guide_legend(override.aes = list(alpha = 1))) +
-  theme_minimal() +
+```{r sharedplot, echo=FALSE}
+shared <- list(
+  facet_grid(. ~ model, labeller = labeller(model = c(ID = "Individuals Matched", nonID = "Populations Matched"))),
+  scale_color_manual(
+    "Matching", guide = guide_legend(override.aes = list(alpha = 1)),
+    values = c(NON = "firebrick", SMO = "black", FEM = "dodgerblue"),
+    labels = c(NON = "None", SMO = "Seeds Only", FEM = "Fully Matched"),
+    breaks = c("NON", "SMO", "FEM")
+  ),
+  scale_fill_manual(
+    "Matching",
+    values = c(NON = "firebrick", SMO = "black", FEM = "dodgerblue"),
+    labels = c(NON = "None", SMO = "Seeds Only", FEM = "Fully Matched"),
+    breaks = c("NON", "SMO", "FEM")
+  ),
+  scale_x_continuous("Simulation Time", limits = c(0, 75), breaks = seq(0, 75, by = 25)),
+  scale_y_continuous("Infections Averted"),
+  theme_minimal(),
   theme(
-    legend.position = c(1, 1) - 0.05, legend.justification = c(1, 1)
+    legend.position = "inside",
+    legend.position.inside = c(1, 1) - 0.05, legend.justification = c(1, 1)
   )
+)
+```
+
+```{r spaghetti, echo=FALSE, out.width="100%"}
+p_spag <- ggplot(sampledt) +
+  aes(time, averted, color = type, group = interaction(type, sample)) +
+  geom_line(alpha = 0.2) +
+  shared
+p_spag
 ```
 
 ```{r ribbons, echo=FALSE, out.width="100%"}
-ggplot(qtiled_dt) +
+p_ribbon <- ggplot(qtiled_dt) +
   aes(time) +
-  facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
-  scale_color_discrete(
-    NULL,
-    aesthetics = c("color", "fill")
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = c(1, 1) - 0.05, legend.justification = c(1, 1)
-  )
+  shared
+p_ribbon
 ```
 
 ```{r noncrazyribbons, echo=FALSE, out.width="100%"}
-ggplot(qtiled_dt[type != "NON"]) +
+p_ribbon_zoom <- ggplot(qtiled_dt) +
   aes(time) +
-  facet_grid(. ~ model) +
   geom_ribbon(aes(fill = type, ymax = hi, ymin = lo), alpha = 0.25) +
   geom_line(aes(color = type, y = md)) +
-  scale_color_discrete(
-    NULL,
-    aesthetics = c("color", "fill")
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = c(1, 1) - 0.05, legend.justification = c(1, 1)
-  )
+  shared + coord_cartesian(ylim = c(-25, 275), expand = FALSE)
+p_ribbon_zoom
+```
+# Summary
+
+```{r allplots, echo=FALSE}
+require(patchwork)
+p_combo <- ((p_spag + theme(axis.title = element_blank(), axis.text.x = element_blank()) + guides(color = "none")) /
+  (p_ribbon + theme(strip.text.x = element_blank(), strip.background.x = element_blank(), axis.title.x = element_blank(), axis.text.x = element_blank())) /
+  (p_ribbon_zoom + theme(axis.title.y = element_blank(), strip.text.x = element_blank(), strip.background.x = element_blank())) / guide_area()) + plot_layout(heights = c(3, 3, 3, 0.5), guides = "collect") & theme(legend.direction = "horizontal", panel.spacing.x = unit(1.5, "line"))
+p_combo
 ```
