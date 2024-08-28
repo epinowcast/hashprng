@@ -14,19 +14,21 @@
 #'
 #' @export
 rrejig <- function(rFUN) {
-  .FUN <- rFUN # make a duplicate of FUN
+  .FUN <- function() {}
   formals(.FUN) <- c(formals(rFUN), alist(hash = ))
+  dispatch <- as.character(substitute(rFUN))
   hashc <- str2lang("set.hash(hash, get('.hash.salt', envir = parent.frame()))")
-  origc <- body(rFUN)
+  origc <- str2lang(sprintf("%s%s%s(%s)",dispatch[2],dispatch[1],dispatch[3],toString(names(formals(rFUN)))))
   body(.FUN) <- substitute({
     hashc
     origc
   })
+  environment(.FUN) <- parent.frame()
   return(.FUN)
 }
 
 #' @export
-sample <- rrejig(sample)
+sample <- rrejig(base::sample)
 
 #' @export
-sample.int <- rrejig(sample.int)
+sample.int <- rrejig(base::sample.int)
