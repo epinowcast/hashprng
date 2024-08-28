@@ -1,3 +1,4 @@
+
 #' @export
 r2dtable <- rrejig(stats::r2dtable)
 
@@ -72,4 +73,3 @@ rwilcox <- rrejig(stats::rwilcox)
 
 #' @export
 rWishart <- rrejig(stats::rWishart)
-

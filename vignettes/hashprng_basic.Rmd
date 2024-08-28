@@ -20,6 +20,7 @@ library(hashprng)
 # used for data transformation + plotting
 library(data.table)
 library(ggplot2)
+library(patchwork)
 # for compute time
 library(parallel)
 ```
@@ -106,16 +107,17 @@ For FEM, we need to match time and event.
 #' @param seed optional; if non-null, using HBM
 m_dStep_NI <- function(t, y, parameters) {
   with(parameters, {
-    Nsus <- y["S"]; Ninf <- y["I"] # extract the S, I population counts
     # compute infection, recovery ignoring individual identities
-    newinf <- rbinom(1, Nsus, 1 - (1 - transmission_p)^Ninf, hash = list("I", t))
-    newrem <- rbinom(1, Ninf, recovery_p, hash = list("R", t))
+    newinf <- rbinom(
+      1, y["S"], 1 - (1 - transmission_p)^y["I"], hash = list("I", t)
+    )
+    newrem <- rbinom(1, y["I"], recovery_p, hash = list("R", t))
 
     # move infectees S -> I, recoveries I -> R
     dY <- c(S = -newinf, I = newinf - newrem, R = newrem)
 
     if (t == vax_t) { # if time for intervention, vaccinate some susceptible
-      newvax <- rbinom(1, Nsus - newinf, vaccination_p, hash = list("V", t))
+      newvax <- rbinom(1, y["S"] - newinf, vaccination_p, hash = list("V", t))
       dY["S"] <- dY["S"] - newvax
       dY["R"] <- dY["R"] + newvax
     }
@@ -128,15 +130,13 @@ m_dStep_NI <- function(t, y, parameters) {
 # the version with no matching: use stats::rbinom without hashing info
 u_dStep_NI <- function(t, y, parameters) {
   with(parameters, {
-    Nsus <- y["S"]; Ninf <- y["I"]
-
-    newinf <- stats::rbinom(1, Nsus, 1 - (1 - transmission_p)^Ninf)
-    newrem <- stats::rbinom(1, Ninf, recovery_p)
+    newinf <- stats::rbinom(1, y["S"], 1 - (1 - transmission_p) ^ y["I"])
+    newrem <- stats::rbinom(1, y["I"], recovery_p)
 
     dY <- c(S = -newinf, I = newinf - newrem, R = newrem)
 
     if (t == vax_t) {
-      newvax <- stats::rbinom(1, Nsus - newinf, vaccination_p)
+      newvax <- stats::rbinom(1, y["S"] - newinf, vaccination_p)
       dY["S"] <- dY["S"] - newvax
       dY["R"] <- dY["R"] + newvax
     }
@@ -160,10 +160,14 @@ infection and recovery.
 #' @param salt an integer scalar, optional; if present, use hash-based matching
 m_dStep_ID <- function(t, y, parameters) {
   with(parameters, {
-    N <- length(y); dY <- integer(N);
-    infectable <- which(y == 1); infectors <- which(y == 2)
+    N <- length(y)
+    dY <- integer(N)
+    infectable <- which(y == 1)
+    infectors <- which(y == 2)
     for (infector in infectors) {
-      expose <- (runif(N, hash = list("I", infector, t)) < transmission_p)[infectable]
+      expose <- (runif(
+        N, hash = list("I", infector, t)) < transmission_p
+      )[infectable]
       dY[infectable] <- dY[infectable] + expose
     }
     dY[dY > 0] <- 1
@@ -172,10 +176,12 @@ m_dStep_ID <- function(t, y, parameters) {
     if (t == vax_t) {
       vaxable <- setdiff(infectable, which(dY == 1))
       # for people still susceptible, indicate 1 => 3 transition
-      dY[vaxable] <- 2*(runif(N, hash = list("V")) < vaccination_p)[vaxable]
+      dY[vaxable] <- 2 * (runif(N, hash = list("V")) < vaccination_p)[vaxable]
     }
 
-    dY[infectors] <- 1*(runif(N, hash = list("R", t)) < recovery_p)[infectors]
+    dY[infectors] <- 1 * (
+      runif(N, hash = list("R", t)) < recovery_p
+    )[infectors]
 
     return(list(dY, incI))
   })
@@ -184,22 +190,27 @@ m_dStep_ID <- function(t, y, parameters) {
 u_dStep_ID <- function(t, y, parameters) {
   with(parameters, {
     dY <- integer(length(y))
-    infectable <- y == 1; infectors <- y == 2
-    incI <- stats::rbinom(1, sum(infectable), 1-(1 - transmission_p)^sum(infectors))
+    infectable <- y == 1
+    infectors <- y == 2
+    incI <- stats::rbinom(
+      1, sum(infectable), 1 - (1 - transmission_p) ^ sum(infectors)
+    )
     infectees <- base::sample(
-      which(infectable),
-      incI,
-      replace = FALSE
+      which(infectable), incI, replace = FALSE
     )
     recI <- stats::rbinom(1, sum(infectors), recovery_p)
     recoverees <- base::sample(which(infectors), recI, replace = FALSE)
     dY[infectees] <- 1
     dY[recoverees] <- 1
-    
+
     # if its time for vaccination
     if (t == vax_t) {
-      vaxI <- stats::rbinom(1, sum(infectable)-length(infectees), vaccination_p)
-      vaccinees <- base::sample(setdiff(which(infectable), infectees), vaxI, replace = FALSE)
+      vaxI <- stats::rbinom(
+        1, sum(infectable) - length(infectees), vaccination_p
+      )
+      vaccinees <- base::sample(
+        setdiff(which(infectable), infectees), vaxI, replace = FALSE
+      )
       # for people still susceptible, indicate 1 => 3 transition
       dY[vaccinees] <- 2
     }
@@ -231,7 +242,10 @@ outcomes.
 
 ```{r parameters}
 # setup parameters
-samplen <- 1000L; pop <- 4000L; maxt <- 75L; initI <- 5L
+samplen <- 1000L
+pop <- 4000L
+maxt <- 75L
+initI <- 5L
 ps <- list(
   transmission_p = 1 - exp(-0.78 / pop),
   # ~ 0.78 infections produced per day in fully susceptible pop
@@ -260,11 +274,11 @@ stepper <- function(maxtime = maxt, y0, dFUN, pars, seed, HBM) {
       environment(dFUN) <- environment()
     } else {
       set.seed(seed) # SMO
-    } 
+    }
   } else {
     # NON
   }
-  
+
   # reserve data structure
   res <- integer(maxtime + 1)
   res[1] <- initI
@@ -299,7 +313,8 @@ nonid_no_match <- system.time(
         y0 = yinit_nonid, dFUN = u_dStep_NI, pars = intps
       ))
     )
-  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+  }, mc.cores = 5) |>
+    rbindlist(idcol = "sample")
 )
 
 set.seed(8675309)
@@ -314,7 +329,8 @@ id_no_match <- system.time(
         y0 = yinit, dFUN = u_dStep_ID, pars = intps
       ))
     )
-  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+  }, mc.cores = 5) |>
+    rbindlist(idcol = "sample")
 )
 
 nonid_seed_match_only <- system.time(
@@ -322,13 +338,16 @@ nonid_seed_match_only <- system.time(
     data.table(
       type = "SMO", model = "nonID",
       not_i = cumsum(stepper(
-        y0 = yinit_nonid, dFUN = u_dStep_NI, pars = nonps, seed = seed, HBM = FALSE
+        y0 = yinit_nonid, dFUN = u_dStep_NI, pars = nonps, seed = seed,
+        HBM = FALSE
       )),
       withi = cumsum(stepper(
-        y0 = yinit_nonid, dFUN = u_dStep_NI, pars = intps, seed = seed, HBM = FALSE
+        y0 = yinit_nonid, dFUN = u_dStep_NI, pars = intps, seed = seed,
+        HBM = FALSE
       ))
     )
-  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+  }, mc.cores = 5) |>
+    rbindlist(idcol = "sample")
 )
 
 id_seed_match_only <- system.time(
@@ -342,7 +361,8 @@ id_seed_match_only <- system.time(
         y0 = yinit, dFUN = u_dStep_ID, pars = intps, seed = seed, HBM = FALSE
       ))
     )
-  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+  }, mc.cores = 5) |>
+    rbindlist(idcol = "sample")
 )
 
 nonid_hash_based_matching <- system.time(
@@ -350,13 +370,16 @@ nonid_hash_based_matching <- system.time(
     data.table(
       type = "FEM", model = "nonID",
       not_i = cumsum(stepper(
-        y0 = yinit_nonid, dFUN = m_dStep_NI, pars = nonps, seed = seed, HBM = TRUE
+        y0 = yinit_nonid, dFUN = m_dStep_NI, pars = nonps, seed = seed,
+        HBM = TRUE
       )),
       withi = cumsum(stepper(
-        y0 = yinit_nonid, dFUN = m_dStep_NI, pars = intps, seed = seed, HBM = TRUE
+        y0 = yinit_nonid, dFUN = m_dStep_NI, pars = intps, seed = seed,
+        HBM = TRUE
       ))
     )
-  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+  }, mc.cores = 5) |>
+    rbindlist(idcol = "sample")
 )
 
 id_hash_based_matching <- system.time(
@@ -370,7 +393,8 @@ id_hash_based_matching <- system.time(
         y0 = yinit, dFUN = m_dStep_ID, pars = intps, seed = seed, HBM = TRUE
       ))
     )
-  }, mc.cores = 5) |> rbindlist(idcol = "sample")
+  }, mc.cores = 5) |>
+    rbindlist(idcol = "sample")
 )
 
 sampledt <- rbind(
@@ -413,7 +437,9 @@ qtiled_dt <- sampledt[,
 
 ```{r sharedplot, echo=FALSE}
 shared <- list(
-  facet_grid(. ~ model, labeller = labeller(model = c(ID = "Individuals Matched", nonID = "Populations Matched"))),
+  facet_grid(. ~ model, labeller = labeller(
+    model = c(ID = "Individuals Matched", nonID = "Populations Matched")
+  )),
   scale_color_manual(
     "Matching", guide = guide_legend(override.aes = list(alpha = 1)),
     values = c(NON = "firebrick", SMO = "black", FEM = "dodgerblue"),
@@ -426,7 +452,9 @@ shared <- list(
     labels = c(NON = "None", SMO = "Seeds Only", FEM = "Fully Matched"),
     breaks = c("NON", "SMO", "FEM")
   ),
-  scale_x_continuous("Simulation Time", limits = c(0, 75), breaks = seq(0, 75, by = 25)),
+  scale_x_continuous(
+    "Simulation Time", limits = c(0, 75), breaks = seq(0, 75, by = 25)
+  ),
   scale_y_continuous("Infections Averted"),
   theme_minimal(),
   theme(
@@ -464,9 +492,21 @@ p_ribbon_zoom
 # Summary
 
 ```{r allplots, echo=FALSE}
-require(patchwork)
-p_combo <- ((p_spag + theme(axis.title = element_blank(), axis.text.x = element_blank()) + guides(color = "none")) /
-  (p_ribbon + theme(strip.text.x = element_blank(), strip.background.x = element_blank(), axis.title.x = element_blank(), axis.text.x = element_blank())) /
-  (p_ribbon_zoom + theme(axis.title.y = element_blank(), strip.text.x = element_blank(), strip.background.x = element_blank())) / guide_area()) + plot_layout(heights = c(3, 3, 3, 0.5), guides = "collect") & theme(legend.direction = "horizontal", panel.spacing.x = unit(1.5, "line"))
+p_combo <- ((
+  p_spag + theme(
+    axis.title = element_blank(), axis.text.x = element_blank()
+  ) + guides(color = "none")
+) / (
+  p_ribbon + theme(
+    strip.text.x = element_blank(), strip.background.x = element_blank(),
+    axis.title.x = element_blank(), axis.text.x = element_blank()
+  )
+) / (
+  p_ribbon_zoom + theme(
+    axis.title.y = element_blank(), strip.text.x = element_blank(),
+    strip.background.x = element_blank())
+) / guide_area()) +
+  plot_layout(heights = c(3, 3, 3, 0.5), guides = "collect") &
+  theme(legend.direction = "horizontal", panel.spacing.x = unit(1.5, "line"))
 p_combo
 ```

@@ -2,7 +2,7 @@
 commandArgs(trailingOnly = TRUE) |>
   readLines() |> (\(x) {
     cat(
-      sprintf("#' @export\n%s <- rrejig(stats::%s)\n\n", x, x),
+      sprintf("\n#' @export\n%s <- rrejig(stats::%s)\n", x, x),
       sep = ""
     )
   })()
