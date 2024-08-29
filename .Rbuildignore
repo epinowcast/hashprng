@@ -13,3 +13,6 @@
 ^\.lintr$
 ^\.Rprofile
 ^inst/make_hexsticker\.R$
+^R/Makefile$
+^R/distros.csv$
+^R/builder.notR$

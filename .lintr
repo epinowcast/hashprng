@@ -6,6 +6,8 @@ linters: linters_with_tags(
     function_argument_linter = NULL,
     indentation_linter = NULL,
     object_name_linter = NULL,
+    object_usage_linter = NULL,
+    implicit_assignment_linter = NULL,
     cyclocomp_linter(20L)
   )
 exclusions: c(
