@@ -27,8 +27,14 @@ rrejig <- function(rFUN) {
   return(.FUN)
 }
 
+#' @title Hash-Matched sample
+#' @param hash an object identifying the event related to the draw
+#' @inheritParams base::sample
 #' @export
 sample <- rrejig(base::sample)
 
+#' @title Hash-Matched sample.int
+#' @param hash an object identifying the event related to the draw
+#' @inheritParams base::sample.int
 #' @export
 sample.int <- rrejig(base::sample.int)

@@ -6,6 +6,11 @@
 \usage{
 set.hash(hash, .hash.salt)
 }
+\arguments{
+\item{hash}{an object which identifies the event}
+
+\item{.hash.salt}{an object which identifies the universe}
+}
 \description{
 Manage RNG state
 }

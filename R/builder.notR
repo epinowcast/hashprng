@@ -2,7 +2,7 @@
 commandArgs(trailingOnly = TRUE) |>
   readLines() |> (\(x) {
     cat(
-      sprintf("\n#' @export\n%s <- rrejig(stats::%s)\n", x, x),
+      sprintf("\n#' @title Hash-Matched %s\n#' @param hash an object identifying the event related to the draw\n#' @inheritParams stats::%s\n#' @export\n%s <- rrejig(stats::%s)\n", x, x, x, x),
       sep = ""
     )
   })()

@@ -19,6 +19,9 @@ set.salt <- function(salt) {
 
 #' @title Manage RNG state
 #'
+#' @param hash an object which identifies the event
+#' @param .hash.salt an object which identifies the universe
+#'
 #' @importFrom digest digest
 #' @export
 set.hash <- function(hash, .hash.salt) {
